@@ -1,0 +1,35 @@
+{
+  "name": "rajeb",
+  "version": "0.0.1",
+  "description": "Rest API JEB expedition system",
+  "main": "server.js",
+  "scripts": {
+    "test": "node server.js",
+    "start": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/x00001101/rajeb.git"
+  },
+  "keywords": [
+    "rest-api",
+    "expedition",
+    "system",
+    "indonesia",
+    "node"
+  ],
+  "author": "Masandy Hariyanto",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/x00001101/rajeb/issues"
+  },
+  "homepage": "https://github.com/x00001101/rajeb#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "bookshelf": "^1.2.0",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "knex": "^0.95.11",
+    "mysql": "^2.18.1"
+  }
+}
