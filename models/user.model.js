@@ -1,5 +1,6 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const db = require('../config/database');
+const crypto = require('crypto');
 
 const User = db.define('User', {
   id: {
@@ -26,16 +27,30 @@ const User = db.define('User', {
   permissionLevel: {
     type: DataTypes.INTEGER,
     defaultValue: 0
+  },
+  active: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: 0
   }
 });
 
+async function generateId(len) {
+  let size = parseInt(len/2);
+  const { randomBytes } = await crypto;
+  const buf = randomBytes(size);
+  let newId = buf.toString('hex');
+  let findId = await User.findOne({ where: { id: newId }});
+  return findId === null ? newId : generateId(len);
+};
+
 User.createNew = (newUser, result) => {
-  User.create({...newUser})
+  generateId(50).then(newId => {
+    User.create({ id: newId , ...newUser })
     .then(() => {
-      result(null, newUser.id);
+      result(null, { id: newId });
     })
-    .catch(err => console.log(err));
-  // console.log(newUser);
+    .catch(err => result(err, null));
+  });
 };
 
 module.exports = User;

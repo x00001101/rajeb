@@ -16,6 +16,8 @@ sequelize.authenticate()
   })
   .catch(err => console.log('Error :', err));
 
-sequelize.sync();
+// sequelize.sync({
+//   alter: true
+// });
 
 module.exports = sequelize;
