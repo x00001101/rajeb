@@ -1,17 +1,19 @@
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 
 const app = express();
 
+const UserRoutes = require('./routes/user.route');
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
-  extended: true
+  extended: false
 }));
 
-app.get("/", (err, res) => {
-  res.send({message: "hai"});
-});
+UserRoutes.routesConfig(app);
 
-app.listen(3600, () => {
-  console.log("Server is running at port 3600");
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log("App is listening at port " + PORT);
 });
