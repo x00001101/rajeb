@@ -23,11 +23,46 @@ exports.createUser = (req, res) => {
     active: req.body.active
   };
 
-  UserModel.createNew(user, (err, data) => {
+  let host = req.protocol + '://' + req.get('host');
+  UserModel.createNew(host, user, (err, data) => {
     if (err) {
-      res.status(500).send({error: err.message});
+      if (err.name == "SequelizeUniqueConstraintError" && err.fields.users_email === user.email) {
+        res.status(400).send({message: 'Email already registered!'});
+      } else {
+        res.status(500).send({error: err});
+      }
     } else {
       res.send(data);
     }
   });
+};
+
+exports.updateDataUser = (req, res) => {
+  UserModel.update({ firstName: req.body.firstName, lastName: req.body.lastName }, { where: { id: req.params.userId }})
+    .then(data => {
+      res.send(data);
+    })
+    .catch(err => {
+      res.status(500).send();
+    })
+};
+
+exports.deleteUserById = (req, res) => {
+  UserModel.destroy({ where: { id: req.params.userId }})
+    .then(() => res.status(204).end())
+    .catch(err => res.status(500).send(err));
+};
+
+const ATTRIBUTES = [ 'id', 'firstName', 'lastName', 'email' ];
+
+exports.findAllUsers = (req, res) => {
+  UserModel.findAll({ attributes: ATTRIBUTES})
+    .then(data => res.send(data))
+    .catch(err => res.status(500).send());
+};
+
+exports.findUserById = (req, res) => {
+  UserModel.findOne({ where: { id: req.params.userId }, attributes: ATTRIBUTES})
+    .then(data => res.send(data))
+    .catch(err => res.status(500).send());
 };
