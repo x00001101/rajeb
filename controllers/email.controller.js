@@ -27,11 +27,8 @@ exports.userEmailVerification = (req, res) => {
 };
 
 exports.requestNewVerification = (req, res) => {
-  if(req.body.constructor === Object && Object.keys(req.body).length === 0) {
-    res.status(400).send({
-      error: 'Content can not be empty!'
-    });
-  }
+  req.body.id = req.jwt.userId;
+  req.body.email = req.jwt.email;
   EmailModel.generateKey(128)
     .then(key => {
       let expired = new Date();
@@ -48,11 +45,13 @@ exports.requestNewVerification = (req, res) => {
         }
       })
       .then(data => {
+        console.log(data);
         let host = req.protocol + '://' + req.get('host');
         let subject = 'Email verification';
-        let contentTxt = host + '/emails/verify/' + data.id + '/' + key;
-        let contentHtml = host + '/emails/verify/' + data.id + '/' + key;
+        let contentTxt = host + '/emails/verify/' + req.body.id + '/' + key;
+        let contentHtml = host + '/emails/verify/' + req.body.id + '/' + key;
         EmailModel.sendMail(req.body.email, subject, contentTxt, contentHtml);
+        res.send({message: 'New confirmation e-mail has sent to ' + req.body.email});
       })
       .catch(err => res.status(500).send(err));
     })

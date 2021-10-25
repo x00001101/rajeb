@@ -1,11 +1,8 @@
-const jwt = require('jsonwebtoken'),
-  secret = process.env.JWT_SECRET;
 const ADMIN_PERMISSION = process.env.ADMIN;
 
 exports.minimumPermissionLevelRequired = (required_permission_level) => {
   return (req, res, next) => {
     let user_permission_level = parseInt(req.jwt.permission_level);
-    let userId = req.jwt.userId;
     if (user_permission_level & required_permission_level) {
       return next();
     } else {
@@ -45,3 +42,12 @@ exports.onlyActiveUserCanDoThisAction = (res, req, next) => {
     return res.status(403).send({message: 'You need to activate your account'});
   }
 };
+
+exports.onlyInactiveUserCanDoThisAction = (req, res, next) => {
+  let active = req.jwt.active;
+  if (!active) {
+    return next();
+  } else {
+    return res.status(403).send({message: 'Your account is already active'});
+  }
+}

@@ -11,6 +11,7 @@ exports.routesConfig = (app) => {
   //request new email verification
   app.post('/emails/requestNewVerification', [
     ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.onlyInactiveUserCanDoThisAction,
     EmailController.requestNewVerification
   ])
 };
