@@ -39,6 +39,14 @@ const User = db.define('User', {
     {
       unique: true,
       fields: ['email']
+    },
+    {
+      name: 'email',
+      fields: ['email']
+    },
+    {
+      name: 'id',
+      fields: ['id']
     }
   ]
 }

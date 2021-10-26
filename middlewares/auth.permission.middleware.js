@@ -11,6 +11,21 @@ exports.minimumPermissionLevelRequired = (required_permission_level) => {
   };
 };
 
+exports.onlyAdminAndPermitedPermissionLevelRequired = (permited_permission_level) => {
+  return (req, res, next) => {
+    let user_permission_level = parseInt(req.jwt.permission_level);
+    if (user_permission_level === required_permission_level) {
+      return next();
+    } else {
+      if (user_permission_level === ADMIN_PERMISSION) {
+        return next();
+      } else {
+        return res.status(403).send();
+      }
+    }
+  }
+}
+
 exports.onlySameUserOrAdminCanDoThisAction = (req, res, next) => {
   let user_permission_level = parseInt(req.jwt.permission_level);
   let userId = req.jwt.userId;

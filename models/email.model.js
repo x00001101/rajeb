@@ -30,12 +30,12 @@ const Email = db.define('Email', {
 {
   indexes: [
     {
-      unique: true,
-      fields: ['email']
-    },
-    {
       name: 'id_active',
       fields: ['userId', 'activeKey', 'enum', 'expiredDate']
+    },
+    {
+      name: 'email',
+      fields: ['email']
     }
   ]
 });
@@ -48,11 +48,17 @@ Email.generateKey = async (len) => {
 };
 
 Email.sendMail = (email, subject, contentTxt, contentHtml) => {
-  let transporter = nodemailer.createTransport({
-    service: 'gmail',
+  /*let transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
     auth: {
-      user: process.env.EMAIL_USERNAME,
-      pass: process.env.EMAIL_PASSWORD
+        type: 'OAuth2',
+        user: process.env.EMAIL_USERNAME,
+        clientId: process.env.CLIENT_ID,
+        clientSecret: process.env.CLIENT_SECRET,
+        refreshToken: process.env.REFRESH_TOKEN,
+        accessToken: process.env.ACCESS_TOKEN
     }
   });
 
@@ -69,7 +75,7 @@ Email.sendMail = (email, subject, contentTxt, contentHtml) => {
       console.log('Error: ', err);
     }
     console.log('Sent to ', email);
-  });
+  });*/
 };
 
 module.exports = Email;
