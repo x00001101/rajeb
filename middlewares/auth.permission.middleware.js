@@ -11,20 +11,24 @@ exports.minimumPermissionLevelRequired = (required_permission_level) => {
   };
 };
 
-exports.onlyAdminAndPermitedPermissionLevelRequired = (permited_permission_level) => {
+exports.onlyAdminAndPermitedPermissionLevelRequired = (
+  permited_permission_level
+) => {
   return (req, res, next) => {
     let user_permission_level = parseInt(req.jwt.permission_level);
-    if (user_permission_level === required_permission_level) {
+    console.log(user_permission_level);
+    console.log(permited_permission_level);
+    if (user_permission_level === permited_permission_level) {
       return next();
     } else {
-      if (user_permission_level === ADMIN_PERMISSION) {
+      if (user_permission_level & ADMIN_PERMISSION) {
         return next();
       } else {
         return res.status(403).send();
       }
     }
-  }
-}
+  };
+};
 
 exports.onlySameUserOrAdminCanDoThisAction = (req, res, next) => {
   let user_permission_level = parseInt(req.jwt.permission_level);
@@ -54,7 +58,9 @@ exports.onlyActiveUserCanDoThisAction = (res, req, next) => {
   if (active) {
     return next();
   } else {
-    return res.status(403).send({message: 'You need to activate your account'});
+    return res
+      .status(403)
+      .send({ message: "You need to activate your account" });
   }
 };
 
@@ -63,6 +69,6 @@ exports.onlyInactiveUserCanDoThisAction = (req, res, next) => {
   if (!active) {
     return next();
   } else {
-    return res.status(403).send({message: 'Your account is already active'});
+    return res.status(403).send({ message: "Your account is already active" });
   }
-}
+};
