@@ -1,14 +1,35 @@
 require("dotenv").config();
 const express = require("express");
+const { createServer } = require("http");
+const { Server } = require("socket.io");
 const bodyParser = require("body-parser");
 
 const app = express();
+const httpServer = createServer(app);
 
 const UserRoutes = require("./routes/user.routes");
 const AuthRoutes = require("./routes/auth.routes");
 const EmailRoutes = require("./routes/email.routes");
 const CourierRoutes = require("./routes/courier.routes");
 const CustomerRoutes = require("./routes/customer.routes");
+
+const PORT = process.env.PORT || 3000;
+httpServer.listen(PORT, () => {
+  console.log("App is listening at port " + PORT);
+});
+
+const io = new Server(httpServer, {
+  path: "/socket.io",
+  forceNew: true,
+  reconnectionAttempts: 3,
+  timeout: 2000,
+});
+
+let socketServer;
+io.on("connection", (socket) => {
+  console.log("Made socket connection");
+  socketServer = socket;
+});
 
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -36,10 +57,5 @@ app.use(
 AuthRoutes.routesConfig(app);
 UserRoutes.routesConfig(app);
 EmailRoutes.routesConfig(app);
-CourierRoutes.routesConfig(app);
+CourierRoutes.routesConfig(app, socketServer);
 CustomerRoutes.routesConfig(app);
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log("App is listening at port " + PORT);
-});
