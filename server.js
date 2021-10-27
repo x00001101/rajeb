@@ -8,6 +8,7 @@ const UserRoutes = require("./routes/user.routes");
 const AuthRoutes = require("./routes/auth.routes");
 const EmailRoutes = require("./routes/email.routes");
 const CourierRoutes = require("./routes/courier.routes");
+const CustomerRoutes = require("./routes/customer.routes");
 
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -36,6 +37,7 @@ AuthRoutes.routesConfig(app);
 UserRoutes.routesConfig(app);
 EmailRoutes.routesConfig(app);
 CourierRoutes.routesConfig(app);
+CustomerRoutes.routesConfig(app);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

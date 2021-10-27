@@ -1,3 +1,3 @@
-exports.courierProfile = (req, res) => {
+exports.courierPage = (req, res) => {
   res.send({message: 'This is Courier page'});
 };

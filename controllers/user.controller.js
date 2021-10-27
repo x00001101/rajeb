@@ -84,7 +84,7 @@ exports.findUserById = (req, res) => {
 exports.resetPasswordConfirmation = (req, res) => {
   res.send({
     id: req.params.userId,
-    reset_password_key: req.params.activationKey,
+    reset_password_key: req.query.reset_token,
   });
 };
 
@@ -131,4 +131,38 @@ exports.resetPasswordForm = (req, res) => {
 
 exports.changePassword = (req, res) => {
   // change password
+  if (req.body.constructor === Object && Object.keys(req.body).length === 0) {
+    res.status(400).send({
+      error: "Content can not be empty!",
+    });
+  }
+  // is req.body.old_password and password match
+  UserModel.findOne({ where: { id: req.params.userId }, attributes: ['password']})
+    .then(data => {
+      if (data === null) {
+        return res.status(404).send({message: 'User not registered'});
+      }
+      let passwordField = data.password.split('$');
+      let salt = passwordField[0];
+      let hash = crypto.createHmac('sha512', salt).update(req.body.old_password).digest('base64');
+      if (hash == passwordField[1]) {
+        let salt = crypto.randomBytes(16).toString("base64");
+        let hash = crypto
+          .createHmac("sha512", salt)
+          .update(req.body.new_password)
+          .digest("base64");
+        req.body.new_password = salt + "$" + hash;
+        // update password
+        UserModel.update(
+          { password: req.body.new_password },
+          { where: { id: req.params.userId } }
+        );
+        res.send({message: 'Password has been changed'});
+      } else {
+        return res.status(400).send({errors: ['Invalid old password']});
+      }
+    })
+    .catch(err => {
+      res.status(500).send();
+    })
 };

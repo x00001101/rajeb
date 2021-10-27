@@ -73,8 +73,8 @@ User.createNew = (host, newUser, result) => {
         Email.create({ userId: data.id, email: data.email, activeKey: key, expiredDate: expired, enum: 1 });
         //send email verification
         let subject = 'Email verification';
-        let contentTxt = host + '/emails/verify/' + data.id + '/' + key;
-        let contentHtml = host + '/emails/verify/' + data.id + '/' + key;
+        let contentTxt = host + '/emails/verify/' + data.id + '?verification_token=' + key;
+        let contentHtml = host + '/emails/verify/' + data.id + '?verification_token=' + key;
         Email.sendMail(data.email, subject, contentTxt, contentHtml);
 
       })

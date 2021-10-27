@@ -21,7 +21,6 @@ exports.routesConfig = (app) => {
   //get one user
   app.get("/users/:userId", [
     ValidationMiddleware.validJWTNeeded,
-    PermissionMiddleware.onlyActiveUserCanDoThisAction,
     PermissionMiddleware.onlySameUserOrAdminCanDoThisAction,
     UserController.findUserById,
   ]);
@@ -43,7 +42,7 @@ exports.routesConfig = (app) => {
   ]);
 
   //reset password from email
-  app.get("/password/reset/:userId/:activationKey", [
+  app.get("/password/reset/:userId", [
     UserController.resetPasswordConfirmation,
   ]);
 

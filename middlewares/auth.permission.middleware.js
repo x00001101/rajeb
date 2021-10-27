@@ -11,20 +11,23 @@ exports.minimumPermissionLevelRequired = (required_permission_level) => {
   };
 };
 
-exports.onlyAdminAndPermitedPermissionLevelRequired = (
-  permited_permission_level
-) => {
+/* 
+  Permited permission level is addition of the order according to the hierarchy
+
+  permited_permission_level as GUEST => GUEST
+  permited_permission_level as CUSTOMER => GUEST + CUSTOMER
+  permited_permission_level as COURIER => GUEST + CUSTOMER + COURIER
+*/
+exports.onlyAdminAndPermitedPermissionLevelRequired = (permited_permission_level) => {
   return (req, res, next) => {
     let user_permission_level = parseInt(req.jwt.permission_level);
-    console.log(user_permission_level);
-    console.log(permited_permission_level);
     if (user_permission_level === permited_permission_level) {
       return next();
     } else {
       if (user_permission_level & ADMIN_PERMISSION) {
         return next();
       } else {
-        return res.status(403).send();
+        return res.status(403).send({error: 'You are not permited'});
       }
     }
   };
@@ -44,7 +47,7 @@ exports.onlySameUserOrAdminCanDoThisAction = (req, res, next) => {
   }
 };
 
-exports.sameUserCantDoThisAction = (res, req, next) => {
+exports.sameUserCantDoThisAction = (req, res, next) => {
   let userId = req.jwt.userId;
   if (req.params.userId !== userId) {
     return next();
@@ -53,7 +56,7 @@ exports.sameUserCantDoThisAction = (res, req, next) => {
   }
 };
 
-exports.onlyActiveUserCanDoThisAction = (res, req, next) => {
+exports.onlyActiveUserCanDoThisAction = (req, res, next) => {
   let active = req.jwt.active;
   if (active) {
     return next();

@@ -6,7 +6,7 @@ exports.userEmailVerification = (req, res) => {
   EmailModel.findOne({
     where: {
       userId: req.params.userId,
-      activeKey: req.params.activationKey,
+      activeKey: req.query.verification_token,
       enum: 1, // 1 means email verification
       expiredDate: {
         [Op.gt]: new Date(),
@@ -55,7 +55,7 @@ exports.requestNewVerification = (req, res) => {
     EmailModel.generateKey(128)
       .then((key) => {
         let expired = new Date();
-        expired.setDate(expired.getDate() + 1);
+        expired.setDate(expired.getDate() + 1);// set expired date for reset password key that active for a day
         EmailModel.upsert(
           {
             userId: req.body.id,
@@ -74,9 +74,9 @@ exports.requestNewVerification = (req, res) => {
           .then(() => {
             let host = req.protocol + "://" + req.get("host");
             let subject = "Email verification";
-            let contentTxt = host + "/emails/verify/" + req.body.id + "/" + key;
+            let contentTxt = host + "/emails/verify/" + req.body.id + "?verification_token=" + key;
             let contentHtml =
-              host + "/emails/verify/" + req.body.id + "/" + key;
+              host + "/emails/verify/" + req.body.id + "?verification_token=" + key;
             EmailModel.sendMail(
               req.body.email,
               subject,
@@ -108,7 +108,7 @@ exports.resetPasswordRequest = (req, res) => {
       }
       EmailModel.generateKey(128).then((key) => {
         let expired = new Date();
-        expired.setDate(expired.getDate() + 1);
+        expired.setHours(expired.getHours() + 1); // set expired date for reset password key that active for an hour
         EmailModel.upsert(
           {
             userId: data.id,
@@ -127,8 +127,8 @@ exports.resetPasswordRequest = (req, res) => {
           .then(() => {
             let host = req.protocol + "://" + req.get("host");
             let subject = "Password Reset Confirmation";
-            let contentTxt = host + "/password/reset/" + data.id + "/" + key;
-            let contentHtml = host + "/password/reset/" + data.id + "/" + key;
+            let contentTxt = host + "/password/reset/" + data.id + "?reset_token=" + key;
+            let contentHtml = host + "/password/reset/" + data.id + "?reset_token=" + key;
             EmailModel.sendMail(
               req.body.email,
               subject,

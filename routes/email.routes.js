@@ -4,7 +4,7 @@ const ValidationMiddleware = require("../middlewares/auth.validation.middleware"
 
 exports.routesConfig = (app) => {
   //user email verification
-  app.get("/emails/verify/:userId/:activationKey", [
+  app.get("/emails/verify/:userId", [
     EmailController.userEmailVerification,
   ]);
 
