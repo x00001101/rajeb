@@ -25,12 +25,6 @@ const io = new Server(httpServer, {
   timeout: 2000,
 });
 
-let socketServer;
-io.on("connection", (socket) => {
-  console.log("Made socket connection");
-  socketServer = socket;
-});
-
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Credentials", "true");
@@ -54,8 +48,11 @@ app.use(
   })
 );
 
-AuthRoutes.routesConfig(app);
-UserRoutes.routesConfig(app);
-EmailRoutes.routesConfig(app);
-CourierRoutes.routesConfig(app, socketServer);
-CustomerRoutes.routesConfig(app);
+io.on("connection", (socket) => {
+  console.log("Made socket connection with id: " + socket.id );
+  AuthRoutes.routesConfig(app);
+  UserRoutes.routesConfig(app);
+  EmailRoutes.routesConfig(app);
+  CourierRoutes.routesConfig(app, socket);
+  CustomerRoutes.routesConfig(app, socket);
+});

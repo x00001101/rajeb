@@ -44,10 +44,14 @@ const Email = db.define(
 );
 
 Email.generateKey = async (len) => {
-  let size = parseInt(len / 2);
-  const { randomBytes } = await crypto;
-  const buf = randomBytes(size);
-  return buf.toString("hex");
+  let result = '';
+  let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  var charactersLength = characters.length;
+  for ( var i = 0; i < len; i++ ) {
+      result += characters.charAt(Math.floor(Math.random() * 
+  charactersLength));
+   }
+  return result;
 };
 
 Email.sendMail = (email, subject, contentTxt, contentHtml) => {

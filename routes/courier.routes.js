@@ -18,9 +18,6 @@ exports.routesConfig = (app, socket) => {
     PermissionMiddleware.onlyAdminAndPermitedPermissionLevelRequired(
       PERMITED_COURIER
     ),
-    CourierController.courierPage,
-    () => {
-      socket.emit("hello", "world");
-    },
+    CourierController.courierPage(socket),
   ]);
 };

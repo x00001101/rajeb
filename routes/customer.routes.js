@@ -11,11 +11,11 @@ const PERMITED_GUEST = Number(GUEST);
 const PERMITED_CUSTOMER = Number(PERMITED_GUEST) + Number(CUSTOMER);
 const PERMITED_COURIER = Number(PERMITED_CUSTOMER) + Number(COURIER);
 
-exports.routesConfig = (app) => {
+exports.routesConfig = (app, socket) => {
   app.get("/customer", [
     ValidationMiddleware.validJWTNeeded,
     PermissionMiddleware.onlyActiveUserCanDoThisAction,
     PermissionMiddleware.onlyAdminAndPermitedPermissionLevelRequired(PERMITED_CUSTOMER),
-    CustomerController.customerPage,
+    CustomerController.customerPage(socket),
   ]);
 };

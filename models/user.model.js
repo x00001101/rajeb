@@ -53,10 +53,14 @@ const User = db.define('User', {
 );
 
 async function generateId(len) {
-  let size = parseInt(len/2);
-  const { randomBytes } = await crypto;
-  const buf = randomBytes(size);
-  let newId = buf.toString('hex');
+  let result = '';
+  let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  var charactersLength = characters.length;
+  for ( var i = 0; i < len; i++ ) {
+      result += characters.charAt(Math.floor(Math.random() * 
+  charactersLength));
+   }
+  let newId = result;
   let findId = await User.findOne({ where: { id: newId }});
   return findId === null ? newId : generateId(len);
 };
