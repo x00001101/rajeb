@@ -11,14 +11,16 @@ exports.minimumPermissionLevelRequired = (required_permission_level) => {
   };
 };
 
-/* 
-  Permited permission level is addition of the order according to the hierarchy
-
-  permited_permission_level as GUEST => GUEST
-  permited_permission_level as CUSTOMER => GUEST + CUSTOMER
-  permited_permission_level as COURIER => GUEST + CUSTOMER + COURIER
-*/
-exports.onlyAdminAndPermitedPermissionLevelRequired = (permited_permission_level) => {
+/*
+ * Permited permission level is addition of the order according to the hierarchy
+ *
+ * permited_permission_level as GUEST => GUEST
+ * permited_permission_level as CUSTOMER => GUEST + CUSTOMER
+ * permited_permission_level as COURIER => GUEST + CUSTOMER + COURIER
+ */
+exports.onlyAdminAndPermitedPermissionLevelRequired = (
+  permited_permission_level
+) => {
   return (req, res, next) => {
     let user_permission_level = parseInt(req.jwt.permission_level);
     if (user_permission_level === permited_permission_level) {
@@ -27,7 +29,7 @@ exports.onlyAdminAndPermitedPermissionLevelRequired = (permited_permission_level
       if (user_permission_level & ADMIN_PERMISSION) {
         return next();
       } else {
-        return res.status(403).send({error: 'You are not permited'});
+        return res.status(403).send({ error: "You are not permited" });
       }
     }
   };

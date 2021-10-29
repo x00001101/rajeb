@@ -1,19 +1,20 @@
-/*
- * SendMail method sending email through smtp 
- *
- * @params fields Array  email, type, host, key 
- */
+const nodemailer = require("nodemailer");
 
-exports.sendMail = (fields) => {
+/*
+ * SendEmail method sending email through smtp
+ *
+ * @params fields Array  email, type, url, key
+ */
+exports.sendEmail = (fields) => {
   let subject, contentTxt, contentHtml;
-  if (fields.type == 'EMAIL_VERIFICATION') {
-    subject = 'Account Email Verification (no-reply)';
-    contentTxt = 'copy this link and paste it on browser: ';
-    contentHtml = 'copy this link and paste it on browser: ';
-  } else if (fields.type == 'PASSWORD_RESET') {
-    subject = 'Reset Account Verification (no-reply)';
-    contentTxt = 'copy this link and paste it on browser: ';
-    contentHtml = 'copy this link and paste it on browser: ';
+  if (fields.type == "EMAIL_VERIFICATION") {
+    subject = "Account Email Verification (no-reply)";
+    contentTxt = "copy this link and paste it on browser: " + fields.url;
+    contentHtml = "copy this link and paste it on browser: " + fields.url;
+  } else if (fields.type == "PASSWORD_RESET") {
+    subject = "Reset Account Verification (no-reply)";
+    contentTxt = "copy this link and paste it on browser: " + fields.url;
+    contentHtml = "copy this link and paste it on browser: " + fields.url;
   }
 
   let transporter = nodemailer.createTransport({

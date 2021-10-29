@@ -42,12 +42,10 @@ exports.routesConfig = (app) => {
   ]);
 
   //reset password from email
-  app.get("/password/reset/:userId", [
-    UserController.resetPasswordConfirmation,
-  ]);
+  app.get("/password/reset", [UserController.resetPasswordConfirmation]);
 
   //reset password form
-  app.patch("/password/reset_form/:userId", [UserController.resetPasswordForm]);
+  app.patch("/password/reset_form", [UserController.resetPasswordForm]);
 
   //change password
   app.patch("/password/change/:userId", [

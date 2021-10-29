@@ -29,21 +29,21 @@ exports.createUser = (req, res) => {
   };
 
   let host = req.protocol + "://" + req.get("host");
-  UserModel.createNewUser(user, (err, data) => {
+  UserModel.createNewUser(host, user, (err, data) => {
     if (err) {
       if (err.name == "SequelizeUniqueConstraintError") {
         if (err.errors[0].value === user.email) {
-          res.status(400).send({message: 'E-mail already registered!'});
+          res.status(400).send({ message: "E-mail already registered!" });
         } else if (err.errors[0].value === user.phoneNumber) {
-          res.status(400).send({message: 'Phone Number already registered!'});
+          res.status(400).send({ message: "Phone Number already registered!" });
         }
       } else {
-        res.status(500).send(err); 
+        res.status(500).send(err);
       }
     } else {
-      res.send(data); 
+      res.send(data);
     }
-  });  
+  });
 };
 
 exports.updateDataUser = (req, res) => {
@@ -83,24 +83,26 @@ exports.findUserById = (req, res) => {
 };
 
 exports.resetPasswordConfirmation = (req, res) => {
-  KeyModel.findOne({ 
+  KeyModel.findOne({
     where: {
-      activeKey: req.query.reset_token, 
+      activeKey: req.query.reset_token,
       enum: 2,
       expiredDate: {
         [Op.gt]: new Date(),
       },
     },
-  }).then(data => {
+  }).then((data) => {
     if (data === null) {
-      return res.status(404).send({message: 'Reset password key has either expired or not available!'});
+      return res.status(404).send({
+        message: "Reset password key has either expired or not available!",
+      });
     } else {
       res.send({
         id: data.userId,
         reset_password_key: req.query.reset_token,
       });
     }
-  })
+  });
 };
 
 exports.resetPasswordForm = (req, res) => {
@@ -114,7 +116,6 @@ exports.resetPasswordForm = (req, res) => {
   // check if reset_password_key is active
   KeyModel.findOne({
     where: {
-      userId: req.params.userId,
       activeKey: req.body.reset_password_key,
       enum: 2, // 2 means password reset
       expiredDate: {
@@ -136,10 +137,10 @@ exports.resetPasswordForm = (req, res) => {
     // update password
     UserModel.update(
       { password: req.body.new_password },
-      { where: { id: req.params.userId } }
+      { where: { id: data.userId } }
     );
     // destroy key
-    KeyModel.destroy({ where: { userId: req.params.userId, enum: 2 } });
+    KeyModel.destroy({ where: { userId: data.userId, enum: 2 } });
     res.send({ message: "Password has been changed, try login" });
   });
 };
@@ -152,14 +153,20 @@ exports.changePassword = (req, res) => {
     });
   }
   // is req.body.old_password and password match
-  UserModel.findOne({ where: { id: req.params.userId }, attributes: ['password']})
-    .then(data => {
+  UserModel.findOne({
+    where: { id: req.params.userId },
+    attributes: ["password"],
+  })
+    .then((data) => {
       if (data === null) {
-        return res.status(404).send({message: 'User not registered'});
+        return res.status(404).send({ message: "User not registered" });
       }
-      let passwordField = data.password.split('$');
+      let passwordField = data.password.split("$");
       let salt = passwordField[0];
-      let hash = crypto.createHmac('sha512', salt).update(req.body.old_password).digest('base64');
+      let hash = crypto
+        .createHmac("sha512", salt)
+        .update(req.body.old_password)
+        .digest("base64");
       if (hash == passwordField[1]) {
         let salt = crypto.randomBytes(16).toString("base64");
         let hash = crypto
@@ -172,12 +179,12 @@ exports.changePassword = (req, res) => {
           { password: req.body.new_password },
           { where: { id: req.params.userId } }
         );
-        res.send({message: 'Password has been changed'});
+        res.send({ message: "Password has been changed" });
       } else {
-        return res.status(400).send({errors: ['Invalid old password']});
+        return res.status(400).send({ errors: ["Invalid old password"] });
       }
     })
-    .catch(err => {
+    .catch((err) => {
       res.status(500).send();
-    })
+    });
 };
