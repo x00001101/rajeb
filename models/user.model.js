@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const db = require('../config/database');
 const crypto = require('crypto');
-const Email = require('./email.model');
+const KeyModel = require('./key.model');
 
 const User = db.define('User', {
   id: {
@@ -9,11 +9,11 @@ const User = db.define('User', {
     allowNull: false,
     primaryKey: true
   },
-  firstName: {
+  fullName: {
     type: DataTypes.STRING,
     allowNull: false
   },
-  lastName: {
+  phoneNumber: {
     type: DataTypes.STRING,
     allowNull: false
   },
@@ -38,15 +38,23 @@ const User = db.define('User', {
   indexes: [
     {
       unique: true,
-      fields: ['email']
+      fields: ['email'],
+    },
+    {
+      unique: true,
+      fields: ['phoneNumber'],
     },
     {
       name: 'email',
-      fields: ['email']
+      fields: ['email'],
     },
     {
       name: 'id',
-      fields: ['id']
+      fields: ['id'],
+    },
+    {
+      name: 'phone',
+      fields: ['phoneNumber'],
     }
   ]
 }
@@ -65,28 +73,24 @@ async function generateId(len) {
   return findId === null ? newId : generateId(len);
 };
 
-User.createNew = (host, newUser, result) => {
-  generateId(50).then(newId => {
-    User.create({ id: newId , ...newUser })
-    .then(data => {
-      Email.generateKey(128).then(key => {
-
-        //create temporary activation key 
-        let expired = new Date();
-        expired.setDate(expired.getDate() + 1);
-        Email.create({ userId: data.id, email: data.email, activeKey: key, expiredDate: expired, enum: 1 });
-        //send email verification
-        let subject = 'Email verification';
-        let contentTxt = host + '/emails/verify/' + data.id + '?verification_token=' + key;
-        let contentHtml = host + '/emails/verify/' + data.id + '?verification_token=' + key;
-        Email.sendMail(data.email, subject, contentTxt, contentHtml);
-
-      })
-      .catch(err => console.log('error generating key'));
-      result(null, { id: data.id });
-    })
-    .catch(err => result(err, null));
-  });
+User.createNewUser = async (newUser, result) => {
+  let newId = await generateId(50);
+  let newKey = await KeyModel.generateKey(128);
+  User.create({ id: newId , ...newUser })
+  .then(data => {
+    let expired = new Date();
+    expired.setDate(expired.getDate() + 1);
+    const keyData = {
+      userId: newId,
+      otp: null,
+      activeKey: newKey,
+      expiredDate: expired,
+      enum: 1,
+    };
+    KeyModel.create(keyData);
+    result(null, { id: data.id });
+  })
+  .catch(err => result(err, null));
 };
 
 module.exports = User;

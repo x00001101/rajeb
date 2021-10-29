@@ -1,6 +1,6 @@
 const { Op } = require("sequelize");
 const UserModel = require("../models/user.model");
-const EmailModel = require("../models/email.model");
+const KeyModel = require("../models/key.model");
 const crypto = require("crypto");
 
 exports.createUser = (req, res) => {
@@ -20,8 +20,8 @@ exports.createUser = (req, res) => {
   req.body.active = 0;
 
   const user = {
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
+    fullName: req.body.fullName,
+    phoneNumber: req.body.phoneNumber,
     email: req.body.email,
     password: req.body.password,
     permissionLevel: req.body.permissionLevel,
@@ -29,20 +29,21 @@ exports.createUser = (req, res) => {
   };
 
   let host = req.protocol + "://" + req.get("host");
-  UserModel.createNew(host, user, (err, data) => {
+  UserModel.createNewUser(user, (err, data) => {
     if (err) {
-      if (
-        err.name == "SequelizeUniqueConstraintError" &&
-        err.fields.users_email === user.email
-      ) {
-        res.status(400).send({ message: "Email already registered!" });
+      if (err.name == "SequelizeUniqueConstraintError") {
+        if (err.errors[0].value === user.email) {
+          res.status(400).send({message: 'E-mail already registered!'});
+        } else if (err.errors[0].value === user.phoneNumber) {
+          res.status(400).send({message: 'Phone Number already registered!'});
+        }
       } else {
-        res.status(500).send({ error: err });
+        res.status(500).send(err); 
       }
     } else {
-      res.send(data);
+      res.send(data); 
     }
-  });
+  });  
 };
 
 exports.updateDataUser = (req, res) => {
@@ -64,7 +65,7 @@ exports.deleteUserById = (req, res) => {
     .catch((err) => res.status(500).send(err));
 };
 
-const ATTRIBUTES = ["id", "firstName", "lastName", "email"];
+const ATTRIBUTES = ["id", "fullName", "phoneNumber", "email"];
 
 exports.findAllUsers = (req, res) => {
   UserModel.findAll({ attributes: ATTRIBUTES })
@@ -82,10 +83,24 @@ exports.findUserById = (req, res) => {
 };
 
 exports.resetPasswordConfirmation = (req, res) => {
-  res.send({
-    id: req.params.userId,
-    reset_password_key: req.query.reset_token,
-  });
+  KeyModel.findOne({ 
+    where: {
+      activeKey: req.query.reset_token, 
+      enum: 2,
+      expiredDate: {
+        [Op.gt]: new Date(),
+      },
+    },
+  }).then(data => {
+    if (data === null) {
+      return res.status(404).send({message: 'Reset password key has either expired or not available!'});
+    } else {
+      res.send({
+        id: data.userId,
+        reset_password_key: req.query.reset_token,
+      });
+    }
+  })
 };
 
 exports.resetPasswordForm = (req, res) => {
@@ -97,7 +112,7 @@ exports.resetPasswordForm = (req, res) => {
     return res.status(400).send({ error: "New Password can not be empty" });
   }
   // check if reset_password_key is active
-  EmailModel.findOne({
+  KeyModel.findOne({
     where: {
       userId: req.params.userId,
       activeKey: req.body.reset_password_key,
@@ -124,7 +139,7 @@ exports.resetPasswordForm = (req, res) => {
       { where: { id: req.params.userId } }
     );
     // destroy key
-    EmailModel.destroy({ where: { userId: req.params.userId, enum: 2 } });
+    KeyModel.destroy({ where: { userId: req.params.userId, enum: 2 } });
     res.send({ message: "Password has been changed, try login" });
   });
 };

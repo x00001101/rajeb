@@ -17,8 +17,10 @@ sequelize
   })
   .catch((err) => console.log("Error :", err));
 
-// sequelize.sync({
-//   alter: true,
-// });
+if (process.env.NODE_ENV === "development") {
+  sequelize.sync({
+    alter: true,
+  });
+}
 
 module.exports = sequelize;

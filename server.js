@@ -48,11 +48,15 @@ app.use(
   })
 );
 
+let socketServer;
+
 io.on("connection", (socket) => {
   console.log("Made socket connection with id: " + socket.id );
-  AuthRoutes.routesConfig(app);
-  UserRoutes.routesConfig(app);
-  EmailRoutes.routesConfig(app);
-  CourierRoutes.routesConfig(app, socket);
-  CustomerRoutes.routesConfig(app, socket);
+  socketServer = socket;
 });
+
+AuthRoutes.routesConfig(app);
+UserRoutes.routesConfig(app);
+EmailRoutes.routesConfig(app);
+CourierRoutes.routesConfig(app, socketServer);
+CustomerRoutes.routesConfig(app, socketServer);
