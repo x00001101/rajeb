@@ -13,7 +13,6 @@ exports.verifyRefreshBodyField = (req, res, next) => {
 exports.validRefreshNeeded = (req, res, next) => {
   let b = Buffer.from(req.body.refresh_token, 'base64');
   let refresh_token = b.toString();
-  console.log(req.jwt);
   let hash = crypto.createHmac('sha512', req.jwt.refreshKey).update(req.jwt.userId + secret).digest("base64");
   if (hash === refresh_token) {
     req.body = req.jwt;
