@@ -33,13 +33,9 @@ exports.userEmailVerification = (req, res) => {
 
 exports.requestNewVerification = async (req, res) => {
   let newKey = await KeyModel.generateKey(128);
-  // if account is active
   UserModel.findOne({ where: { id: req.jwt.userId } }).then((data) => {
     if (data === null) {
       return res.status(404).send({ message: "User not found!" });
-    }
-    if (data.active) {
-      return res.status(400).send({ error: "User is active!" });
     }
     // send here
     const expired = new Date();

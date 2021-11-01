@@ -14,6 +14,7 @@ exports.routesConfig = function(app) {
       AuthValidationMiddleware.validJWTNeeded,
       AuthValidationMiddleware.verifyRefreshBodyField,
       AuthValidationMiddleware.validRefreshNeeded,
+      VerifyUserMiddleware.reloadDataForRefreshToken,
       AuthorizationController.login
     ]);
 };

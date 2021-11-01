@@ -17,32 +17,34 @@ exports.sendEmail = (fields) => {
     contentHtml = "copy this link and paste it on browser: " + fields.url;
   }
 
-  let transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
-    auth: {
-      type: "OAuth2",
-      user: process.env.EMAIL_USERNAME,
-      clientId: process.env.CLIENT_ID,
-      clientSecret: process.env.CLIENT_SECRET,
-      refreshToken: process.env.REFRESH_TOKEN,
-      accessToken: process.env.ACCESS_TOKEN,
-    },
-  });
+  if (process.env.NODE_ENV === "development") {
+    let transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      auth: {
+        type: "OAuth2",
+        user: process.env.EMAIL_USERNAME,
+        clientId: process.env.CLIENT_ID,
+        clientSecret: process.env.CLIENT_SECRET,
+        refreshToken: process.env.REFRESH_TOKEN,
+        accessToken: process.env.ACCESS_TOKEN,
+      },
+    });
 
-  let mailOption = {
-    from: process.env.EMAIL_USERNAME,
-    to: fields.email,
-    subject: subject,
-    text: contentTxt,
-    html: contentHtml,
-  };
+    let mailOption = {
+      from: process.env.EMAIL_USERNAME,
+      to: fields.email,
+      subject: subject,
+      text: contentTxt,
+      html: contentHtml,
+    };
 
-  transporter.sendMail(mailOption, (err) => {
-    if (err) {
-      console.log("Error: ", err);
-    }
-    console.log("Sent to ", email);
-  });
+    transporter.sendMail(mailOption, (err) => {
+      if (err) {
+        console.log("Error: ", err);
+      }
+      console.log("Sent to ", email);
+    });
+  }
 };

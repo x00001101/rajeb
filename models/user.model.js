@@ -89,7 +89,7 @@ User.createNewUser = async (host, newUser, result) => {
         expiredDate: expired,
         enum: 1,
       };
-      KeyModel.create(keyData);
+      KeyModel.upsert(keyData, { where: { userId: newId, enum: 1 } });
       const fields = {
         email: data.email,
         type: "EMAIL_VERIFICATION",
@@ -97,7 +97,7 @@ User.createNewUser = async (host, newUser, result) => {
         key: newKey,
       };
       EmailModel.sendEmail(fields);
-      result(null, { id: data.id });
+      result(null, data);
     })
     .catch((err) => result(err, null));
 };
