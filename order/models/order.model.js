@@ -19,7 +19,7 @@ const Order = db.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    senderOrigin: {
+    senderOriginId: {
       type: DataTypes.STRING,
       allowNull: false,
     },
@@ -39,7 +39,7 @@ const Order = db.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    recipientOrigin: {
+    recipientDestinationId: {
       type: DataTypes.STRING,
       allowNull: false,
     },
@@ -49,11 +49,38 @@ const Order = db.define(
     },
     recipientPostCode: {
       type: DataTypes.INTEGER,
-      allowNull: false
-    }
+      allowNull: false,
+    },
+    serviceId: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    itemName: DataTypes.STRING,
+    itemTypeId: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    itemQty: {
+      type: DataTypes.DECIMAL(10,2),
+      allowNull: false,
+    },
+    itemWeight: {
+      type: DataTypes.DECIMAL(10,2),
+      allowNull: false,
+    },
+    itemDimension: DataTypes.STRING,
+    itemValue: DataTypes.INTEGER,
+    insurance: DataTypes.BOOLEAN,
+    voucherId: DataTypes.STRING(50),
   },
   {
-    name: "order_id",
-    field: ["id"],
+    indexes: [
+      {
+        name: "order_id",
+        fields: ["id"],
+      },
+    ]
   },
 );
+
+module.exports = Order;

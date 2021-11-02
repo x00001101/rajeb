@@ -12,6 +12,7 @@ const AuthRoutes = require("./auth/routes");
 const EmailRoutes = require("./email/routes");
 const CourierRoutes = require("./courier/routes");
 const CustomerRoutes = require("./customer/routes");
+const OrderRoutes = require("./order/routes");
 
 const PORT = process.env.PORT || 3000;
 httpServer.listen(PORT, () => {
@@ -60,3 +61,4 @@ UserRoutes.routesConfig(app);
 EmailRoutes.routesConfig(app);
 CourierRoutes.routesConfig(app, socketServer);
 CustomerRoutes.routesConfig(app, socketServer);
+OrderRoutes.routesConfig(app, socketServer);
