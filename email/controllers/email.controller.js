@@ -1,7 +1,7 @@
 const { Op } = require("sequelize");
 const EmailModel = require("../models/email.model");
-const KeyModel = require("../models/key.model");
-const UserModel = require("../models/user.model");
+const KeyModel = require("../../key/models/key.model");
+const UserModel = require("../../user/models/user.model");
 
 exports.userEmailVerification = (req, res) => {
   KeyModel.findOne({

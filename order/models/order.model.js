@@ -1,5 +1,5 @@
 const { DataTypes } = require("sequelize");
-const db = require("../config/database");
+const db = require("../../common/config/database");
 
 const Order = db.define(
   "Order",
@@ -9,6 +9,8 @@ const Order = db.define(
       allowNull: false,
       primaryKey: true,
     },
+    senderId: DataTypes.STRING,
+    courierId: DataTypes.STRING,
     senderFullName: {
       type: DataTypes.STRING,
       allowNull: false,

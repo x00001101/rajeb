@@ -7,11 +7,11 @@ const bodyParser = require("body-parser");
 const app = express();
 const httpServer = createServer(app);
 
-const UserRoutes = require("./routes/user.routes");
-const AuthRoutes = require("./routes/auth.routes");
-const EmailRoutes = require("./routes/email.routes");
-const CourierRoutes = require("./routes/courier.routes");
-const CustomerRoutes = require("./routes/customer.routes");
+const UserRoutes = require("./user/routes");
+const AuthRoutes = require("./auth/routes");
+const EmailRoutes = require("./email/routes");
+const CourierRoutes = require("./courier/routes");
+const CustomerRoutes = require("./customer/routes");
 
 const PORT = process.env.PORT || 3000;
 httpServer.listen(PORT, () => {

@@ -1,6 +1,6 @@
 const { Op } = require("sequelize");
 const UserModel = require("../models/user.model");
-const KeyModel = require("../models/key.model");
+const KeyModel = require("../../key/models/key.model");
 const crypto = require("crypto");
 const jwtSecret = process.env.JWT_SECRET, 
   jwt = require('jsonwebtoken');

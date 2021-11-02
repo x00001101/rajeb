@@ -1,6 +1,6 @@
-const EmailController = require("../controllers/email.controller");
-const PermissionMiddleware = require("../middlewares/auth.permission.middleware");
-const ValidationMiddleware = require("../middlewares/auth.validation.middleware");
+const EmailController = require("./controllers/email.controller");
+const PermissionMiddleware = require("../auth/middlewares/auth.permission.middleware");
+const ValidationMiddleware = require("../auth/middlewares/auth.validation.middleware");
 
 exports.routesConfig = (app) => {
   //user email verification

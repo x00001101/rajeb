@@ -1,7 +1,7 @@
 const { DataTypes } = require("sequelize");
-const db = require("../config/database");
-const EmailModel = require("./email.model");
-const KeyModel = require("./key.model");
+const db = require("../../common/config/database");
+const EmailModel = require("../../email/models/email.model");
+const KeyModel = require("../../key/models/key.model");
 
 const User = db.define(
   "User",
