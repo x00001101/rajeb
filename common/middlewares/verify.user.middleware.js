@@ -1,4 +1,4 @@
-const UserModel = require("../models/user.model"),
+const UserModel = require("../../user/models/user.model"),
   crypto = require("crypto");
 
 exports.hasAuthValidFields = (req, res, next) => {
@@ -56,4 +56,25 @@ exports.isPasswordAndUserMatch = (req, res, next) => {
     .catch((err) => {
       res.status(500).send();
     });
+};
+
+exports.reloadDataForRefreshToken = (req, res, next) => {
+  UserModel.findOne({ where: {id: req.jwt.userId} })
+    .then((data) => {
+      if (data === null) {
+        return res.status(404).send();
+      }
+      //reload req.body
+      req.body = {
+        userId: data.id,
+        email: data.email,
+        permission_level: data.permissionLevel,
+        active: data.active,
+        provider: "refresh_token",
+        name: data.fullName,
+        phone_number: data.phoneNumber,
+      }
+      return next();
+    })
+    .catch(err => res.status(500).send());
 };

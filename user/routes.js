@@ -1,6 +1,6 @@
-const UserController = require("../controllers/user.controller");
-const PermissionMiddleware = require("../middlewares/auth.permission.middleware");
-const ValidationMiddleware = require("../middlewares/auth.validation.middleware");
+const UserController = require("./controllers/user.controller");
+const PermissionMiddleware = require("../auth/middlewares/auth.permission.middleware");
+const ValidationMiddleware = require("../auth/middlewares/auth.validation.middleware");
 
 const ADMIN = process.env.ADMIN;
 const COURIER = process.env.COURIER;

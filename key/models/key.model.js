@@ -1,5 +1,5 @@
 const { DataTypes } = require("sequelize");
-const db = require("../config/database");
+const db = require("../../common/config/database");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 

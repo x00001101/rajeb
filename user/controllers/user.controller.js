@@ -1,7 +1,9 @@
 const { Op } = require("sequelize");
 const UserModel = require("../models/user.model");
-const KeyModel = require("../models/key.model");
+const KeyModel = require("../../key/models/key.model");
 const crypto = require("crypto");
+const jwtSecret = process.env.JWT_SECRET, 
+  jwt = require('jsonwebtoken');
 
 exports.createUser = (req, res) => {
   if (req.body.constructor === Object && Object.keys(req.body).length === 0) {
@@ -16,7 +18,7 @@ exports.createUser = (req, res) => {
     .update(req.body.password)
     .digest("base64");
   req.body.password = salt + "$" + hash;
-  req.body.permissionLevel = 1;
+  // req.body.permissionLevel = 1;
   req.body.active = 0;
 
   const user = {
@@ -30,18 +32,51 @@ exports.createUser = (req, res) => {
 
   let host = req.protocol + "://" + req.get("host");
   UserModel.createNewUser(host, user, (err, data) => {
+    let output = {};
     if (err) {
       if (err.name == "SequelizeUniqueConstraintError") {
+        output.success = false;
+        output.output = null;
         if (err.errors[0].value === user.email) {
-          res.status(400).send({ message: "E-mail already registered!" });
+          output.message = "Registered e-mail!";
         } else if (err.errors[0].value === user.phoneNumber) {
-          res.status(400).send({ message: "Phone Number already registered!" });
+          output.message = "Registered phone number!";
         }
+        res.status(400).send(output);
       } else {
         res.status(500).send(err);
       }
     } else {
-      res.send(data);
+      try {
+        // login
+        req.body = {
+          userId: data.id,
+          email: data.email,
+          permission_level: data.permissionLevel,
+          active: data.active,
+          provider: "New Account",
+          name: data.fullName,
+          phone_number: data.phoneNumber,
+        };
+        let refreshId = data.id + jwtSecret;
+        let salt = crypto.randomBytes(16).toString("base64");
+        let hash = crypto.createHmac('sha512', salt).update(refreshId).
+        digest("base64");
+        let token = jwt.sign(req.body, jwtSecret);
+        let b = Buffer.from(hash);
+        let refresh_token = b.toString("base64");
+
+        output.success = true;
+        output.message = "New account created successfully!";
+        output.output = {
+          id: data.id,
+          accessToken: token,
+          refreshToken: refresh_token,
+        };
+        res.send(output);
+      } catch (err) {
+        res.status(500).send(err);
+      }
     }
   });
 };
