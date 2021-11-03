@@ -13,6 +13,7 @@ const EmailRoutes = require("./email/routes");
 const CourierRoutes = require("./courier/routes");
 const CustomerRoutes = require("./customer/routes");
 const OrderRoutes = require("./order/routes");
+const CommonRoutes = require("./common/routes");
 
 const PORT = process.env.PORT || 3000;
 httpServer.listen(PORT, () => {
@@ -62,3 +63,4 @@ EmailRoutes.routesConfig(app);
 CourierRoutes.routesConfig(app, socketServer);
 CustomerRoutes.routesConfig(app, socketServer);
 OrderRoutes.routesConfig(app, socketServer);
+CommonRoutes.routesConfig(app);
