@@ -4,7 +4,7 @@ const { Op } = require("sequelize");
 exports.getRegion = async (req, res) => {
   let src = req.query.src;
   let value = req.query.val;
-  let off_lim = {};
+  let off_lim = {}; // set offset limit
   if (req.query.off) {
     off_lim.offset = Number(req.query.off);
   }
@@ -25,11 +25,10 @@ exports.getRegion = async (req, res) => {
         },
         ...id
       },
-      attributes: [ 'id', 'name' ]
     });
   } else if (src == 'r') {
     if (req.query.pid) {
-      id.province_id = req.query.pid;
+      id.ProvinceId = req.query.pid;
     }
     out = await Regency.findAll({
       ...off_lim,
@@ -39,11 +38,10 @@ exports.getRegion = async (req, res) => {
         },
         ...id
       },
-      attributes: [ 'id', 'province_id', 'name' ]
     });
   } else if (src == 'd') {
     if (req.query.pid) {
-      id.regency_id = req.query.pid;
+      id.RegencyId = req.query.pid;
     }
     out = await District.findAll({
       ...off_lim,
@@ -53,11 +51,10 @@ exports.getRegion = async (req, res) => {
         },
         ...id
       },
-      attributes: [ 'id', 'regency_id', 'name' ]
     });
   } else if (src == 'v') {
     if (req.query.pid) {
-      id.district_id = req.query.pid;
+      id.DistrictId = req.query.pid;
     }
     out = await Village.findAll({
       ...off_lim,
@@ -67,7 +64,6 @@ exports.getRegion = async (req, res) => {
         },
         ...id
       },
-      attributes: [ 'id', 'district_id', 'name' ]
     });
   }
   res.send(out);

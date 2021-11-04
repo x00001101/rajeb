@@ -15,7 +15,9 @@ const Province = db.define(
     },
   },
   {
-    tableName: "provinces",
+    timestamps: false,
+    createdAt: false,
+    updatedAt: false,
   },
 );
 
@@ -33,7 +35,9 @@ const Regency = db.define(
     }
   },
   {
-    tableName: "regencies",
+    timestamps: false,
+    createdAt: false,
+    updatedAt: false,
   },
 );
 
@@ -53,8 +57,10 @@ const District = db.define(
     }
   },
   {
-    tableName: "districts",
-  }
+    timestamps: false,
+    createdAt: false,
+    updatedAt: false,
+  },
 );
 
 District.belongsTo(Regency);
@@ -73,7 +79,9 @@ const Village = db.define(
     },
   },
   {
-    tableName: "villages",
+    timestamps: false,
+    createdAt: false,
+    updatedAt: false,
   },
 );
 

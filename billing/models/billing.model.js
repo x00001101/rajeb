@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 const db = require("../../common/config/database");
+const Order = require("../../order/models/order.model");
 
 const Billing = db.define(
   "Billing",
@@ -9,27 +10,22 @@ const Billing = db.define(
       allowNull: false,
       primaryKey: true,
     },
-    orderId: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
     voucherAmmount: DataTypes.DECIMAL(10,2),
     insuranceAmmount: DataTypes.DECIMAL(10,2),
     Amount: DataTypes.DECIMAL(10,2),
     totalAmmount: DataTypes.DECIMAL(10,2),
+    paid: DataTypes.BOOLEAN,
   },
   {
     indexes: [
       {
         name: "id",
         fields: ["id"],
-      },
-      {
-        name: "order_id",
-        fields: ["orderId"],
       }
     ]
   }
 );
+
+Billing.belongsTo(Order);
 
 module.exports = Billing;

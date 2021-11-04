@@ -6,10 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "test": "nodemon server.js",
-    "dev": "NODE_ENV=development node server.js",
-    "test_w": "set NODE_ENV=test&&npm test",
-    "test_l": "NODE_ENV=test&&npm test",
-    "dev_w": "set NODE_ENV=development&&npm start"
+    "build": "node server.js build",
+    "build-database": "node server.js build insert"
   },
   "repository": {
     "type": "git",
