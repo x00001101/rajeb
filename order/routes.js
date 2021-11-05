@@ -1,6 +1,10 @@
-const OrderController = require('./controllers/order.controller');
+const OrderController = require("./controllers/order.controller");
+const OrderMiddleware = require("./middlewares/order.middleware");
 
 exports.routesConfig = (app, socket) => {
   //create new order
-  app.post("/orders", [OrderController.createNewOrder(socket)]);
-}
+  app.post("/orders", [
+    OrderMiddleware.verifyDataBeforeProcess,
+    OrderController.createNewOrder(socket),
+  ]);
+};

@@ -14,6 +14,7 @@ const CourierRoutes = require("./courier/routes");
 const CustomerRoutes = require("./customer/routes");
 const OrderRoutes = require("./order/routes");
 const CommonRoutes = require("./common/routes");
+const DropPointRoutes = require("./drop_point/routes");
 
 const PORT = process.env.PORT || 3000;
 httpServer.listen(PORT, () => {
@@ -53,7 +54,7 @@ app.use(
 let socketServer;
 
 io.on("connection", (socket) => {
-  console.log("Made socket connection with id: " + socket.id );
+  console.log("Made socket connection with id: " + socket.id);
   socketServer = socket;
 });
 
@@ -64,3 +65,4 @@ CourierRoutes.routesConfig(app, socketServer);
 CustomerRoutes.routesConfig(app, socketServer);
 OrderRoutes.routesConfig(app, socketServer);
 CommonRoutes.routesConfig(app);
+DropPointRoutes.routesConfig(app);

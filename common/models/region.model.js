@@ -18,7 +18,7 @@ const Province = db.define(
     timestamps: false,
     createdAt: false,
     updatedAt: false,
-  },
+  }
 );
 
 const Regency = db.define(
@@ -32,13 +32,13 @@ const Regency = db.define(
     name: {
       type: DataTypes.STRING,
       allowNull: false,
-    }
+    },
   },
   {
     timestamps: false,
     createdAt: false,
     updatedAt: false,
-  },
+  }
 );
 
 Regency.belongsTo(Province);
@@ -54,13 +54,13 @@ const District = db.define(
     name: {
       type: DataTypes.STRING,
       allowNull: false,
-    }
+    },
   },
   {
     timestamps: false,
     createdAt: false,
     updatedAt: false,
-  },
+  }
 );
 
 District.belongsTo(Regency);
@@ -82,12 +82,44 @@ const Village = db.define(
     timestamps: false,
     createdAt: false,
     updatedAt: false,
-  },
+  }
 );
 
 Village.belongsTo(District);
+
+const Region = {
+  getFullRegionName: async (regionId) => {
+    const data = await Village.findOne({
+      where: { id: regionId },
+      include: [
+        {
+          model: District,
+          required: true,
+          attributes: ["name"],
+          include: [
+            {
+              model: Regency,
+              required: true,
+              attributes: ["name"],
+              include: [
+                {
+                  model: Province,
+                  required: true,
+                  attributes: ["name"],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      attributes: ["name"],
+    });
+    return data;
+  },
+};
 
 exports.Province = Province;
 exports.Regency = Regency;
 exports.District = District;
 exports.Village = Village;
+exports.Region = Region;

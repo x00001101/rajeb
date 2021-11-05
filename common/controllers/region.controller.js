@@ -1,4 +1,9 @@
-const { Province, Regency, District, Village } = require("../models/region.model");
+const {
+  Province,
+  Regency,
+  District,
+  Village,
+} = require("../models/region.model");
 const { Op } = require("sequelize");
 
 exports.getRegion = async (req, res) => {
@@ -13,7 +18,7 @@ exports.getRegion = async (req, res) => {
   }
   let id = {}; // parrent id
   let out;
-  if (src == 'p') {
+  if (src == "p") {
     if (req.query.pid) {
       id.id = req.query.pid;
     }
@@ -21,12 +26,12 @@ exports.getRegion = async (req, res) => {
       ...off_lim,
       where: {
         name: {
-          [Op.substring]: value
+          [Op.substring]: value,
         },
-        ...id
+        ...id,
       },
     });
-  } else if (src == 'r') {
+  } else if (src == "r") {
     if (req.query.pid) {
       id.ProvinceId = req.query.pid;
     }
@@ -34,12 +39,12 @@ exports.getRegion = async (req, res) => {
       ...off_lim,
       where: {
         name: {
-          [Op.substring]: value
+          [Op.substring]: value,
         },
-        ...id
+        ...id,
       },
     });
-  } else if (src == 'd') {
+  } else if (src == "d") {
     if (req.query.pid) {
       id.RegencyId = req.query.pid;
     }
@@ -47,12 +52,12 @@ exports.getRegion = async (req, res) => {
       ...off_lim,
       where: {
         name: {
-          [Op.substring]: value
+          [Op.substring]: value,
         },
-        ...id
+        ...id,
       },
     });
-  } else if (src == 'v') {
+  } else if (src == "v") {
     if (req.query.pid) {
       id.DistrictId = req.query.pid;
     }
@@ -60,11 +65,11 @@ exports.getRegion = async (req, res) => {
       ...off_lim,
       where: {
         name: {
-          [Op.substring]: value
+          [Op.substring]: value,
         },
-        ...id
+        ...id,
       },
     });
   }
   res.send(out);
-}
+};
