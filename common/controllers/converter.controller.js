@@ -2,7 +2,6 @@ const Converter = require("../models/converter.model");
 
 exports.setNewConverter = (req, res) => {
   Converter.create({
-    name: req.body.converterName,
     value: req.body.converterValue,
   })
     .then((data) => {

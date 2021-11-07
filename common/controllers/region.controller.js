@@ -18,58 +18,109 @@ exports.getRegion = async (req, res) => {
   }
   let id = {}; // parrent id
   let out;
-  if (src == "p") {
-    if (req.query.pid) {
-      id.id = req.query.pid;
-    }
-    out = await Province.findAll({
-      ...off_lim,
-      where: {
-        name: {
-          [Op.substring]: value,
+  if (src.length == 1) {
+    if (src == "p") {
+      if (req.query.pid) {
+        id.id = req.query.pid;
+      }
+      out = await Province.findAll({
+        ...off_lim,
+        where: {
+          name: {
+            [Op.substring]: value,
+          },
+          ...id,
         },
-        ...id,
-      },
-    });
-  } else if (src == "r") {
-    if (req.query.pid) {
-      id.ProvinceId = req.query.pid;
-    }
-    out = await Regency.findAll({
-      ...off_lim,
-      where: {
-        name: {
-          [Op.substring]: value,
+      });
+    } else if (src == "r") {
+      if (req.query.pid) {
+        id.ProvinceId = req.query.pid;
+      }
+      out = await Regency.findAll({
+        ...off_lim,
+        where: {
+          name: {
+            [Op.substring]: value,
+          },
+          ...id,
         },
-        ...id,
-      },
-    });
-  } else if (src == "d") {
-    if (req.query.pid) {
-      id.RegencyId = req.query.pid;
-    }
-    out = await District.findAll({
-      ...off_lim,
-      where: {
-        name: {
-          [Op.substring]: value,
+        include: [
+          {
+            model: Province,
+            required: true,
+            attributes: ["name"],
+          },
+        ],
+      });
+    } else if (src == "d") {
+      if (req.query.pid) {
+        id.RegencyId = req.query.pid;
+      }
+      out = await District.findAll({
+        ...off_lim,
+        where: {
+          name: {
+            [Op.substring]: value,
+          },
+          ...id,
         },
-        ...id,
-      },
-    });
-  } else if (src == "v") {
-    if (req.query.pid) {
-      id.DistrictId = req.query.pid;
-    }
-    out = await Village.findAll({
-      ...off_lim,
-      where: {
-        name: {
-          [Op.substring]: value,
+        include: [
+          {
+            model: Regency,
+            required: true,
+            attributes: ["name"],
+            include: [
+              {
+                model: Province,
+                required: true,
+                attributes: ["name"],
+              },
+            ],
+          },
+        ],
+      });
+    } else if (src == "v") {
+      if (req.query.pid) {
+        id.DistrictId = req.query.pid;
+      }
+      out = await Village.findAll({
+        ...off_lim,
+        where: {
+          name: {
+            [Op.substring]: value,
+          },
+          ...id,
         },
-        ...id,
-      },
-    });
+        include: [
+          {
+            model: District,
+            required: true,
+            attributes: ["name"],
+            include: [
+              {
+                model: Regency,
+                required: true,
+                attributes: ["name"],
+                include: [
+                  {
+                    model: Province,
+                    required: true,
+                    attributes: ["name"],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+    }
+  } else {
+    var i = src.length;
+    let outs = [];
+    for (var i = 0; i < src.length; i++) {
+      outs.push(src.charAt(i));
+    }
+    return res.send(outs);
   }
-  res.send(out);
+  return res.send(out);
 };

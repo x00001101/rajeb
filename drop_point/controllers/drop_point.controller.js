@@ -2,8 +2,10 @@ const DropPointModel = require("../models/drop_point.model");
 const { Region } = require("../../common/models/region.model");
 
 exports.createNew = async (req, res) => {
-  const dpId = DropPointModel.createId(req.body.name);
   const dataRegion = await Region.getFullRegionName(req.body.region_id);
+  let regencyDataName = dataRegion.District.Regency.name;
+  let regencyName = regencyDataName.split(" ");
+  const dpId = await DropPointModel.createId(regencyName[1]);
   const regionName =
     dataRegion.name +
     ", " +
@@ -19,6 +21,7 @@ exports.createNew = async (req, res) => {
     regionName: regionName,
     phoneNumber: req.body.phone_number,
   };
-  // DropPointModel.create({});
-  res.send(DP);
+  DropPointModel.create(DP)
+    .then((data) => res.send(data))
+    .catch((err) => res.status(500).send(err));
 };

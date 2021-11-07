@@ -1,10 +1,10 @@
 const OrderController = require("./controllers/order.controller");
-const OrderMiddleware = require("./middlewares/order.middleware");
+const DataValidatorMiddleware = require("../common/middlewares/verify.data.middleware");
 
 exports.routesConfig = (app, socket) => {
   //create new order
   app.post("/orders", [
-    OrderMiddleware.verifyDataBeforeProcess,
+    DataValidatorMiddleware.verifyDataRequestForOrderProcess,
     OrderController.createNewOrder(socket),
   ]);
 };

@@ -12,7 +12,6 @@ const Service = db.define("Service", {
     type: DataTypes.INTEGER(12),
     allowNull: false,
   },
-  additionalPrice: DataTypes.STRING,
   description: DataTypes.STRING,
 });
 
