@@ -51,7 +51,7 @@ exports.createNewOrder = (socket) => {
         "x" +
         req.body.itemHeight +
         "x" +
-        req.body.itemTall,
+        req.body.itemLong,
       itemValue: req.body.itemValue,
       insurance: req.body.insurance,
       voucherId: req.body.voucherId,

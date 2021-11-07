@@ -3,9 +3,7 @@ const PermissionMiddleware = require("../auth/middlewares/auth.permission.middle
 const ValidationMiddleware = require("../auth/middlewares/auth.validation.middleware");
 
 const ADMIN = process.env.ADMIN;
-const COURIER = process.env.COURIER;
 const CUSTOMER = process.env.CUSTOMER;
-const GUEST = process.env.GUEST;
 
 exports.routesConfig = (app) => {
   //create new user

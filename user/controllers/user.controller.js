@@ -2,8 +2,8 @@ const { Op } = require("sequelize");
 const UserModel = require("../models/user.model");
 const KeyModel = require("../../key/models/key.model");
 const crypto = require("crypto");
-const jwtSecret = process.env.JWT_SECRET, 
-  jwt = require('jsonwebtoken');
+const jwtSecret = process.env.JWT_SECRET,
+  jwt = require("jsonwebtoken");
 
 exports.createUser = (req, res) => {
   if (req.body.constructor === Object && Object.keys(req.body).length === 0) {
@@ -60,14 +60,18 @@ exports.createUser = (req, res) => {
         };
         let refreshId = data.id + jwtSecret;
         let salt = crypto.randomBytes(16).toString("base64");
-        let hash = crypto.createHmac('sha512', salt).update(refreshId).
-        digest("base64");
+        let hash = crypto
+          .createHmac("sha512", salt)
+          .update(refreshId)
+          .digest("base64");
         let token = jwt.sign(req.body, jwtSecret);
         let b = Buffer.from(hash);
         let refresh_token = b.toString("base64");
 
         output.success = true;
         output.message = "New account created successfully!";
+        output.email_message =
+          "Activation e-mail has been sent!, check your inbox / spam folder";
         output.output = {
           id: data.id,
           accessToken: token,
