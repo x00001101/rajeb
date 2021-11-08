@@ -27,26 +27,11 @@ exports.getAllServicesData = (req, res) => {
 
 exports.getPrice = async (req, res) => {
   let weight = req.body.item_weight;
-  let height = req.body.item_height;
+  let height = req.body.item_height ;
   let width = req.body.item_width;
   let long = req.body.item_long;
   let serviceId = req.params.serviceId;
 
-  let service = await ServiceModel.findOne({ where: { id: serviceId } });
-  if (height != 0 && width != 0 && long != 0) {
-    const converterValue = await ConverterModel.findOne();
-    if (converterValue === null) {
-      output.error = "Converter value not set!";
-      return res.status(400).send(output);
-    }
-    const weightTotal = (height * width * long) / converterValue.value;
-    if (Math.round(weightTotal) > Math.round(weight)) {
-      output.price = Math.round(weightTotal) * service.setPrice;
-    } else {
-      output.price = Math.round(weight) * service.setPrice;
-    }
-    return res.send(output);
-  }
-  output.price = Math.round(weight) * service.setPrice;
-  return res.send(output);
+  const data = await ServiceModel.prices(serviceId,weight,height,width,long);
+  res.send(data);
 };

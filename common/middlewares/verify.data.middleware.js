@@ -1,3 +1,6 @@
+const ServiceModel = require("../../service/models/service.model");
+const { Village } = require("../models/region.model");
+
 const output = {};
 output.output = null;
 output.success = false;
@@ -5,110 +8,119 @@ output.error_message = "fields can not be empty!";
 
 let error_fields = [];
 
-exports.verifyDataRequestForCreatingNewConverter = (req, res, next) => {
+let requirements = [];
+
+async function checkRequirements(requirements, req) {
+  let errors = [];
+  await requirements.forEach(requirement => {
+    if (!req.body[requirement] || req.body[requirement] === "" || typeof req.body[requirement] === "undefined") {
+      errors.push(requirement);
+    }
+  })
+  return errors;
+}
+
+exports.verifyDataRequestForCreatingNewConverter = async (req, res, next) => {
   if (req.body.constructor === Object && Object.keys(req.body).length === 0) {
     output.message = "Need body data to pass!";
     return res.status(400).send(output);
   }
-  if (!req.body.converterValue || req.body.converterValue === "") {
-    error_fields.push("converterValue");
-  }
+
+  requirements = ["converterValue"];
+  
+  error_fields = await checkRequirements(requirements, req);
+  
   output.fields = error_fields;
   error_fields = [];
-  if (error_fields.length > 0) {
+  if (output.fields.length > 0) {
     return res.status(400).send(output);
   } else {
     return next();
   }
 };
 
-exports.verifyDataRequestForGetPrice = (req, res, next) => {
+exports.verifyDataRequestForGetPrice = async (req, res, next) => {
   if (req.body.constructor === Object && Object.keys(req.body).length === 0) {
     output.message = "Need body data to pass!";
     return res.status(400).send(output);
   }
-  if (!req.body.item_weight || req.body.item_weight === "") {
-    error_fields.push("item_weight");
-  }
+  
+  requirements = ["item_weight"];
+
+  error_fields = await checkRequirements(requirements, req);
+
   output.fields = error_fields;
   error_fields = [];
-  if (error_fields.length > 0) {
+  if (output.fieldslength > 0) {
     return res.status(400).send(output);
   } else {
     return next();
   }
 };
 
-exports.verifyDataRequestForOrderProcess = (req, res, next) => {
+exports.verifyDataRequestForOrderProcess = async (req, res, next) => {
   if (req.body.constructor === Object && Object.keys(req.body).length === 0) {
     output.message = "Need body data to pass!";
     return res.status(400).send(output);
   }
-  if (!req.body.senderFullName || req.body.senderFullName === "") {
-    error_fields.push("senderFullName");
+
+  requirements = [
+    "senderFullName",
+    "senderPhoneNumber",
+    "senderOriginId",
+    "senderPostCode",
+    "recipientFullName",
+    "recipientPhoneNumber",
+    "recipientDestinationId",
+    "recipientAddress",
+    "recipientPostCode",
+    "serviceId",
+    "itemTypeId",
+    "itemWeight"
+  ];
+
+  error_fields = await checkRequirements(requirements, req);
+  
+  //check service if its available
+  let serviceId = req.body.serviceId;
+  const service = await ServiceModel.findOne({where: { id: serviceId }});
+  if (service === null) {
+    return res.status(400).send({error: "Service Id is not available"});
   }
-  if (!req.body.senderPhoneNumber || req.body.senderPhoneNumber === "") {
-    error_fields.push("senderPhoneNumber");
+
+  let villageId = req.body.senderOriginId;
+  const villageOrigin = await Village.findOne({where: { id: villageId }});
+  if (villageOrigin === null) {
+    return res.status(400).send({error: "Origin Id is not found"});
   }
-  if (!req.body.senderOriginId || req.body.senderOriginId === "") {
-    error_fields.push("senderOriginId");
+  villageId = req.body.recipientDestinationId;
+  const villageDestination = await Village.findOne({where: { id: villageId }});
+  if (villageOrigin === null) {
+    return res.status(400).send({error: "Destination Id is not found"});
   }
-  if (!req.body.senderAddress || req.body.senderAddress === "") {
-    error_fields.push("senderAddress");
-  }
-  if (!req.body.senderPostCode || req.body.senderPostCode === "") {
-    error_fields.push("senderPostCode");
-  }
-  if (!req.body.recipientFullName || req.body.recipientFullName === "") {
-    error_fields.push("recipientFullName");
-  }
-  if (!req.body.recipientPhoneNumber || req.body.recipientPhoneNumber === "") {
-    error_fields.push("recipientPhoneNumber");
-  }
-  if (
-    !req.body.recipientDestinationId ||
-    req.body.recipientDestinationId === ""
-  ) {
-    error_fields.push("recipientDestinationId");
-  }
-  if (!req.body.recipientAddress || req.body.recipientAddress === "") {
-    error_fields.push("recipientAddress");
-  }
-  if (!req.body.recipientPostCode || req.body.recipientPostCode === "") {
-    error_fields.push("recipientPostCode");
-  }
-  if (!req.body.serviceId || req.body.serviceId === "") {
-    error_fields.push("serviceId");
-  }
-  if (!req.body.itemTypeId || req.body.itemTypeId === "") {
-    error_fields.push("itemTypeId");
-  }
-  if (!req.body.itemWeight || req.body.itemWeight === "") {
-    error_fields.push("itemWeight");
-  }
+
   output.fields = error_fields;
   error_fields = [];
-  if (error_fields.length > 0) {
+  if (output.fields.length > 0) {
     return res.status(400).send(output);
   } else {
     return next();
   }
 };
 
-exports.verifyDataRequestForCreatingNewService = (req, res, next) => {
+exports.verifyDataRequestForCreatingNewService = async (req, res, next) => {
   if (req.body.constructor === Object && Object.keys(req.body).length === 0) {
     output.message = "Need body data to pass!";
     return res.status(400).send(output);
   }
-  if (!req.body.name || req.body.name === "") {
-    error_fields.push("name");
-  }
-  if (!req.body.name || req.body.name === "") {
-    error_fields.push("name");
-  }
+  
+  requirements = ["name"];
+
+  error_fields = await checkRequirements(requirements, req);
+
   output.fields = error_fields;
   error_fields = [];
-  if (error_fields.length > 0) {
+  if (output.fields.length > 0) {
     return res.status(400).send(output);
   } else {
     return next();

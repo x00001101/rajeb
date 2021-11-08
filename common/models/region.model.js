@@ -41,7 +41,8 @@ const Regency = db.define(
   }
 );
 
-Regency.belongsTo(Province);
+Province.hasMany(Regency);
+// Regency.belongsTo(Province);
 
 const District = db.define(
   "District",
@@ -63,7 +64,8 @@ const District = db.define(
   }
 );
 
-District.belongsTo(Regency);
+Regency.hasMany(District);
+// District.belongsTo(Regency);
 
 const Village = db.define(
   "Village",
@@ -85,7 +87,8 @@ const Village = db.define(
   }
 );
 
-Village.belongsTo(District);
+District.hasMany(Village);
+// Village.belongsTo(District);
 
 const Region = {
   getFullRegionName: async (regionId) => {

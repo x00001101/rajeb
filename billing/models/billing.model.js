@@ -10,10 +10,10 @@ const Billing = db.define(
       allowNull: false,
       primaryKey: true,
     },
-    voucherAmmount: DataTypes.DECIMAL(10,2),
-    insuranceAmmount: DataTypes.DECIMAL(10,2),
+    voucherAmount: DataTypes.DECIMAL(10,2),
+    insuranceAmount: DataTypes.DECIMAL(10,2),
     Amount: DataTypes.DECIMAL(10,2),
-    totalAmmount: DataTypes.DECIMAL(10,2),
+    totalAmount: DataTypes.DECIMAL(10,2),
     paid: DataTypes.BOOLEAN,
   },
   {
@@ -26,6 +26,6 @@ const Billing = db.define(
   }
 );
 
-Billing.belongsTo(Order);
+Billing.Order = Billing.belongsTo(Order);
 
 module.exports = Billing;
