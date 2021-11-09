@@ -1,3 +1,57 @@
-swagger: "2.0"
+openapi: 3.0.0
 info:
-  description: ""
+  title: RAJEB
+  description: REST API for JEB Express
+  version: 0.1.0
+servers:
+  - url: http
+paths:
+  /users:
+    post:
+      summary: Add new user
+      tags:
+        - user
+      description: ""
+      requestBody:
+        description: ""
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                fullName: 
+                  type: string
+                  example: Masandy Hariyanto
+                phoneNumber:
+                  type: string
+                  example: "081334559782"
+                email:
+                  type: string
+                  example: masmasandy@gmail.com
+                password:
+                  type: string
+                  example: themostepicpasswordofalltime
+      
+      responses:
+        '200':    # status code
+          description: A JSON array of output data
+          content:
+            application/json:
+              schema: 
+                properties:
+                  success:
+                    type: boolean
+                  message: 
+                    type: string
+                  output:
+                    type: object
+                    properties:
+                      id: 
+                        type: string
+                        description: This is the User ID
+                      accessToken:
+                        type: string
+                        description: the token created is used as a new user login
+                      refreshToken:
+                        type: string
+                        description: need to pass this token to create new accessToken at /auth/refresh
