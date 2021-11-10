@@ -69,9 +69,10 @@ exports.createUser = (req, res) => {
         let refresh_token = b.toString("base64");
 
         output.success = true;
-        output.message = "New account created successfully!";
-        output.email_message =
-          "Activation e-mail has been sent!, check your inbox / spam folder";
+        output.messages = [
+        "New account created successfully!",
+        "Activation e-mail has been sent!, check your inbox / spam folder"
+        ];
         output.output = {
           id: data.id,
           accessToken: token,

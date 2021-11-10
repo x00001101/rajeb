@@ -7,7 +7,8 @@ const User = db.define(
   "User",
   {
     id: {
-      type: DataTypes.STRING,
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
       allowNull: false,
       primaryKey: true,
     },
@@ -28,8 +29,8 @@ const User = db.define(
       allowNull: false,
     },
     permissionLevel: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0,
+      type: DataTypes.ENUM("1","5","15","2063","6159"),
+      allowNull: false
     },
     active: {
       type: DataTypes.BOOLEAN,
@@ -62,34 +63,20 @@ const User = db.define(
   }
 );
 
-async function generateId(len) {
-  let result = "";
-  let characters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  var charactersLength = characters.length;
-  for (var i = 0; i < len; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  let newId = result;
-  let findId = await User.findOne({ where: { id: newId } });
-  return findId === null ? newId : generateId(len);
-}
-
 User.createNewUser = async (host, newUser, result) => {
-  let newId = await generateId(50);
   let newKey = await KeyModel.generateKey(128);
-  User.create({ id: newId, ...newUser })
+  User.create(newUser)
     .then((data) => {
       let expired = new Date();
       expired.setDate(expired.getDate() + 1);
       const keyData = {
-        userId: newId,
+        userId: data.id,
         otp: null,
         activeKey: newKey,
         expiredDate: expired,
         enum: 1,
       };
-      KeyModel.upsert(keyData, { where: { userId: newId, enum: 1 } });
+      KeyModel.upsert(keyData, { where: { userId: data.id, enum: 1 } });
       const fields = {
         email: data.email,
         type: "EMAIL_VERIFICATION",

@@ -1,11 +1,11 @@
-const DropPointModel = require("../models/drop_point.model");
+const PostModel = require("../models/post.model");
 const { Region } = require("../../common/models/region.model");
 
 exports.createNew = async (req, res) => {
   const dataRegion = await Region.getFullRegionName(req.body.region_id);
-  let regencyDataName = dataRegion.District.Regency.name;
-  let regencyName = regencyDataName.split(" ");
-  const dpId = await DropPointModel.createId(regencyName[1]);
+  const regencyDataName = dataRegion.District.Regency.name;
+  const regencyName = regencyDataName.split(" ");
+  const dpId = req.body.id;
   const regionName =
     dataRegion.name +
     ", " +
@@ -14,14 +14,14 @@ exports.createNew = async (req, res) => {
     dataRegion.District.Regency.name +
     ", " +
     dataRegion.District.Regency.Province.name;
-  const DP = {
+  const Post = {
     id: dpId,
     name: req.body.name,
     regionId: req.body.region_id,
     regionName: regionName,
-    phoneNumber: req.body.phone_number,
+    type: req.body.type,
   };
-  DropPointModel.create(DP)
+  PostModel.create(Post)
     .then((data) => res.send(data))
     .catch((err) => res.status(500).send(err));
 };

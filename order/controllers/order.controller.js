@@ -1,5 +1,4 @@
-const OrderModel = require("../models/order.model");
-const BillingModel = require("../../billing/models/billing.model");
+const { Order, Billing } = require("../models/order.model");
 const CounterModel = require("../../common/models/counter.model");
 const ServiceModel = require("../../service/models/service.model");
 

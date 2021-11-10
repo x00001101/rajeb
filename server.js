@@ -14,7 +14,7 @@ const CourierRoutes = require("./courier/routes");
 const CustomerRoutes = require("./customer/routes");
 const OrderRoutes = require("./order/routes");
 const CommonRoutes = require("./common/routes");
-const DropPointRoutes = require("./drop_point/routes");
+const PostRoutes = require("./post/routes");
 const ServiceRoutes = require("./service/routes");
 
 const PORT = process.env.PORT || 3000;
@@ -66,5 +66,5 @@ CourierRoutes.routesConfig(app, socketServer);
 CustomerRoutes.routesConfig(app, socketServer);
 OrderRoutes.routesConfig(app, socketServer);
 CommonRoutes.routesConfig(app);
-DropPointRoutes.routesConfig(app);
+PostRoutes.routesConfig(app);
 ServiceRoutes.routesConfig(app);

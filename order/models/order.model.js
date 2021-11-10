@@ -83,4 +83,43 @@ const Order = db.define(
   },
 );
 
-module.exports = Order;
+const Billing = db.define(
+  "Billing",
+  {
+    id: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      primaryKey: true,
+    },
+    voucherAmount: DataTypes.DECIMAL(10,2),
+    insuranceAmount: DataTypes.DECIMAL(10,2),
+    Amount: DataTypes.DECIMAL(10,2),
+    totalAmount: DataTypes.DECIMAL(10,2),
+    paid: DataTypes.BOOLEAN,
+  },
+  {
+    indexes: [
+      {
+        name: "id",
+        fields: ["id"],
+      }
+    ]
+  }
+);
+
+Order.hasOne(Billing);
+Billing.belongsTo(Order);
+
+const Tracking = db.define(
+  "Tracking",
+  {
+    orderId: DataTypes.STRING,
+    codeId: DataTypes.STRING,
+    postId: DataTypes.STRING,
+    userId: DataTypes.UUID,
+    description: DataTypes.TEXT,
+  }
+);
+
+exports.Order = Order;
+exports.Billing = Billing;
