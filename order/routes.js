@@ -4,7 +4,7 @@ const DataValidatorMiddleware = require("../common/middlewares/verify.data.middl
 exports.routesConfig = (app, socket) => {
   //create new order
   app.post("/orders", [
-    DataValidatorMiddleware.verifyDataRequestForOrderProcess,
+    // DataValidatorMiddleware.verifyDataRequestForOrderProcess,
     OrderController.createNewOrder(socket),
   ]);
 };

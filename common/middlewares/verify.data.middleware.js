@@ -12,11 +12,15 @@ let requirements = [];
 
 async function checkRequirements(requirements, req) {
   let errors = [];
-  await requirements.forEach(requirement => {
-    if (!req.body[requirement] || req.body[requirement] === "" || typeof req.body[requirement] === "undefined") {
+  await requirements.forEach((requirement) => {
+    if (
+      !req.body[requirement] ||
+      req.body[requirement] === "" ||
+      typeof req.body[requirement] === "undefined"
+    ) {
       errors.push(requirement);
     }
-  })
+  });
   return errors;
 }
 
@@ -27,9 +31,9 @@ exports.verifyDataRequestForCreatingNewConverter = async (req, res, next) => {
   }
 
   requirements = ["converterValue"];
-  
+
   error_fields = await checkRequirements(requirements, req);
-  
+
   output.fields = error_fields;
   error_fields = [];
   if (output.fields.length > 0) {
@@ -44,7 +48,7 @@ exports.verifyDataRequestForGetPrice = async (req, res, next) => {
     output.message = "Need body data to pass!";
     return res.status(400).send(output);
   }
-  
+
   requirements = ["item_weight"];
 
   error_fields = await checkRequirements(requirements, req);
@@ -76,27 +80,29 @@ exports.verifyDataRequestForOrderProcess = async (req, res, next) => {
     "recipientPostCode",
     "serviceId",
     "itemTypeId",
-    "itemWeight"
+    "itemWeight",
   ];
 
   error_fields = await checkRequirements(requirements, req);
-  
+
   //check service if its available
   let serviceId = req.body.serviceId;
-  const service = await ServiceModel.findOne({where: { id: serviceId }});
+  const service = await ServiceModel.findOne({ where: { id: serviceId } });
   if (service === null) {
-    return res.status(400).send({error: "Service Id is not available"});
+    return res.status(400).send({ error: "Service Id is not available" });
   }
 
   let villageId = req.body.senderOriginId;
-  const villageOrigin = await Village.findOne({where: { id: villageId }});
+  const villageOrigin = await Village.findOne({ where: { id: villageId } });
   if (villageOrigin === null) {
-    return res.status(400).send({error: "Origin Id is not found"});
+    return res.status(400).send({ error: "Origin Id is not found" });
   }
   villageId = req.body.recipientDestinationId;
-  const villageDestination = await Village.findOne({where: { id: villageId }});
+  const villageDestination = await Village.findOne({
+    where: { id: villageId },
+  });
   if (villageOrigin === null) {
-    return res.status(400).send({error: "Destination Id is not found"});
+    return res.status(400).send({ error: "Destination Id is not found" });
   }
 
   output.fields = error_fields;
@@ -113,7 +119,7 @@ exports.verifyDataRequestForCreatingNewService = async (req, res, next) => {
     output.message = "Need body data to pass!";
     return res.status(400).send(output);
   }
-  
+
   requirements = ["name"];
 
   error_fields = await checkRequirements(requirements, req);

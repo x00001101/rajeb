@@ -1,5 +1,8 @@
 const { DataTypes } = require("sequelize");
 const db = require("../config/database");
+const { customAlphabet } = require("nanoid/async");
+
+const nanoid = customAlphabet("0123456789", 6);
 
 const Counter = db.define(
   "Counter",
@@ -16,7 +19,7 @@ const Counter = db.define(
   {
     indexes: [
       {
-        fields: ['name', 'month_year'], 
+        fields: ["name", "month_year"],
       },
     ],
     createdAt: false,
@@ -28,18 +31,12 @@ Counter.pad = (number, size) => {
   number = number.toString();
   while (number.length < size) number = "0" + number;
   return number;
-}
+};
 
 Counter.generateId = async () => {
-  let len = 6;
-  let result = '';
-  let characters = '0123456789';
-  let charactersLength = characters.length;
-  for (var i = 0; i < len; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  let data = await Counter.findOne({ where: { id: result }});
+  const result = await nanoid();
+  let data = await Counter.findOne({ where: { id: result } });
   return data === null ? result : generateId();
-}
+};
 
 module.exports = Counter;

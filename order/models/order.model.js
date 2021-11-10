@@ -29,7 +29,7 @@ const Order = db.define(
     },
     senderPostCode: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
     },
     recipientFullName: {
       type: DataTypes.STRING,
@@ -61,11 +61,11 @@ const Order = db.define(
       allowNull: false,
     },
     itemQty: {
-      type: DataTypes.DECIMAL(10,2),
+      type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
     itemWeight: {
-      type: DataTypes.DECIMAL(10,2),
+      type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
     itemDimension: DataTypes.STRING,
@@ -79,8 +79,8 @@ const Order = db.define(
         name: "order_id",
         fields: ["id"],
       },
-    ]
-  },
+    ],
+  }
 );
 
 const Billing = db.define(
@@ -91,10 +91,10 @@ const Billing = db.define(
       allowNull: false,
       primaryKey: true,
     },
-    voucherAmount: DataTypes.DECIMAL(10,2),
-    insuranceAmount: DataTypes.DECIMAL(10,2),
-    Amount: DataTypes.DECIMAL(10,2),
-    totalAmount: DataTypes.DECIMAL(10,2),
+    voucherAmount: DataTypes.DECIMAL(10, 2),
+    insuranceAmount: DataTypes.DECIMAL(10, 2),
+    Amount: DataTypes.DECIMAL(10, 2),
+    totalAmount: DataTypes.DECIMAL(10, 2),
     paid: DataTypes.BOOLEAN,
   },
   {
@@ -102,24 +102,24 @@ const Billing = db.define(
       {
         name: "id",
         fields: ["id"],
-      }
-    ]
+      },
+    ],
   }
 );
 
 Order.hasOne(Billing);
 Billing.belongsTo(Order);
 
-const Tracking = db.define(
-  "Tracking",
-  {
-    orderId: DataTypes.STRING,
-    codeId: DataTypes.STRING,
-    postId: DataTypes.STRING,
-    userId: DataTypes.UUID,
-    description: DataTypes.TEXT,
-  }
-);
+const Tracking = db.define("Tracking", {
+  codeId: DataTypes.STRING,
+  postId: DataTypes.STRING,
+  userId: DataTypes.UUID,
+  description: DataTypes.TEXT,
+});
+
+Order.hasMany(Tracking);
+Tracking.belongsTo(Order);
 
 exports.Order = Order;
 exports.Billing = Billing;
+exports.Tracking = Tracking;

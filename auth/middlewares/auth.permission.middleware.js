@@ -1,4 +1,5 @@
-const ADMIN_PERMISSION = process.env.ADMIN;
+const ADMIN_PERMISSION = process.env.ADMIN,
+  SUPER_USER_PERMISSION = process.env.SUPER_USER;
 
 exports.minimumPermissionLevelRequired = (required_permission_level) => {
   return (req, res, next) => {
@@ -75,5 +76,20 @@ exports.onlyInactiveUserCanDoThisAction = (req, res, next) => {
     return next();
   } else {
     return res.status(403).send({ message: "Your account is already active" });
+  }
+};
+
+exports.toCreateAnAdminNeedAdminOrSuperUser = (req, res, next) => {
+  if (parseInt(req.body.permissionLevel) < 2048) {
+    return next();
+  }
+  if (!req.headers["authorization"]) {
+    return res.status(403).send();
+  }
+  let user_permission_level = parseInt(req.jwt.permission_level);
+  if (user_permission_level & SUPER_USER_PERMISSION) {
+    return next();
+  } else {
+    return res.status(403).send();
   }
 };

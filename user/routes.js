@@ -7,7 +7,10 @@ const CUSTOMER = process.env.CUSTOMER;
 
 exports.routesConfig = (app) => {
   //create new user
-  app.post("/users", [UserController.createUser]);
+  app.post("/users", [
+    PermissionMiddleware.toCreateAnAdminNeedAdminOrSuperUser,
+    UserController.createUser,
+  ]);
 
   //get all data users
   app.get("/users", [
