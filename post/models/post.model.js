@@ -21,6 +21,11 @@ const Post = db.define("Post", {
     allowNull: false,
     defaultValue: "DP",
   }
-});
+},
+{
+  createdAt: false,
+  updatedAt: false,
+}  
+);
 
 module.exports = Post;

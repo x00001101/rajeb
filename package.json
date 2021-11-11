@@ -1,6 +1,6 @@
 {
   "name": "rajeb",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "REST API for JEB Expedition System",
   "main": "server.js",
   "scripts": {

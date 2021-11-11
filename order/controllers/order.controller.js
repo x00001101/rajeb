@@ -1,14 +1,19 @@
-const { Order, Billing } = require("../models/order.model");
+const { Order, Billing, Tracking } = require("../models/order.model");
 const { customAlphabet } = require("nanoid/async");
 const CounterModel = require("../../common/models/counter.model");
 const ServiceModel = require("../../service/models/service.model");
+const VoucherModel = require("../../voucher/models/voucher.model");
+const CodeModel = require("../../common/models/code.model");
+const PostModel = require("../../post/models/post.model");
 
 const nanoid = customAlphabet("0123456789", 12);
 
-const generateBillingId = async (id) => {
-  const billingId = await Billing.findOne({ where: { id: id } });
+let output = {};
+
+const generateBillingId = async () => {
   const newId = await nanoid();
-  return billingId === null ? id : generateBillingId(newId);
+  const billingId = await Billing.findOne({ where: { id: newId } });
+  return billingId === null ? newId : generateBillingId(newId);
 };
 
 exports.createNewOrder = (socket) => {
@@ -47,152 +52,177 @@ exports.createNewOrder = (socket) => {
       serviceId + counterId.toString() + CounterModel.pad(counter, 6);
 
     // set billing id. just set it random using nanoid
-    const newId = await nanoid();
-    const billingId = await generateBillingId(newId);
+    const billingId = await generateBillingId();
 
-    // now insert data to table.
+    if (!req.body.itemWidth) {
+      req.body.itemWidth = 0;
+    }
+    if (!req.body.itemHeight) {
+      req.body.itemHeight = 0;
+    }
+    if (!req.body.itemLong) {
+      req.body.itemLong = 0;
+    }
+
+    // this is order
+    const orderObject = {
+      id: awbNumber,
+      senderFullName: req.body.senderFullName,
+      senderPhoneNumber: req.body.senderPhoneNumber,
+      senderOriginId: req.body.senderOriginId,
+      senderAddress: req.body.senderAddress,
+      senderPostCode: req.body.senderPostCode,
+      recipientFullName: req.body.recipientFullName,
+      recipientPhoneNumber: req.body.recipientPhoneNumber,
+      recipientDestinationId: req.body.recipientDestinationId,
+      recipientAddress: req.body.recipientAddress,
+      recipientPostCode: req.body.recipientPostCode,
+      serviceId: req.body.serviceId,
+      itemName: req.body.itemName,
+      itemTypeId: req.body.itemTypeId,
+      itemWeight: req.body.itemWeight,
+      itemQty: req.body.itemQty,
+      itemDimension:
+        req.body.itemWidth +
+        "x" +
+        req.body.itemHeight +
+        "x" +
+        req.body.itemLong,
+      itemValue: req.body.itemValue,
+      insurance: req.body.insurance,
+      voucherId: req.body.voucherId,
+    };
+
+    // this is billing
+
+    // get service price amount;
+    let serviceAmount = 0;
+    const service = await ServiceModel.findOne({ where: { id: req.body.serviceId }});
+    if (service !== null) {
+      serviceAmount = service.dataValues.setPrice;
+    } else {
+      output.success = false;
+      output.error = "Not Found!";
+      output.field = "Service Id";
+      output.message = "Service not found!"
+      return res.status(404).send(output);
+    }
+
+    // set the voucher amount
+    let voucherAmount = 0;
+    // get voucher amount from voucher id using model
+    if (req.body.voucherId) {
+      const voucher = await VoucherModel.findOne({ where: { id: req.body.voucherId }});
+      if (voucher !== null) {
+        const voucherVal = voucher.dataValues;
+        // get voucher type;
+        if (voucherVal.type === "PERCENT") {
+          voucherAmount = Number(serviceAmount) * Number(voucherVal.value) / 100; 
+        } else if (voucherVal.type === "VALUE") {
+          voucherAmount = voucherVal.value;
+        }
+      } else {
+        output.success = false;
+        output.error = "Not Found!";
+        output.field = "Voucher Id";
+        output.message = "Voucher not found!";
+        return res.status(404).send(output);
+      }
+    }
+
+    // set insurance amount
+    let insuranceAmount = 0;
+    if (req.body.insurance) {
+      insuranceAmount = Number(itemValue) * 0.02 / 100;
+    }
+
+    // set total amount;
+    const totalAmount = Number(serviceAmount) - Number(voucherAmount) + Number(insuranceAmount);
+
+    const billingObject = {
+      id: billingId,
+      voucherAmount: voucherAmount,
+      insuranceAmount: insuranceAmount,
+      serviceAmount: serviceAmount,
+      totalAmount: totalAmount,
+      paid: false,
+    };
+
+    // insert data to table 
+    Promise.all([
+      Order.create(orderObject),
+      Billing.create(billingObject),
+    ])
+    .then(([order, billing]) => {
+      Promise(billing.setOrder(order));
+    })
+    .catch(err => res.status(500).send(err));
+
+    output.success = true;
+    output.awbNumber = awbNumber;
+    output.billingId = billingId;
+    res.send(output);
   };
 };
 
-// let output = {};
+exports.patchOrder = async (req, res) => {
+  if (!req.params.orderId) {
+    output.success = false;
+    output.error = "Need to set Order Id as Parameter";
+    return res.status(400).send(output);
+  }
 
-//     // create new order
-//     let counter = 1;
-//     const today = new Date();
-//     const month = today.getMonth() + 1; // this return month and change it so it returns 1 to 12
-//     const year = today.getFullYear(); // this return full year e.g. 2021
-//     const month_year = month.toString() + year.toString(); // combine that two becomes mYYYYY 32021
-//     const counterNumber = await CounterModel.findOne({
-//       where: { name: req.body.serviceId, month_year: month_year },
-//     });
-//     let counterId;
-//     if (counterNumber === null) {
-//       counterId = await CounterModel.generateId();
-//       CounterModel.create({
-//         id: counterId,
-//         name: req.body.serviceId,
-//         month_year: month_year,
-//         counter: 1,
-//       });
-//     } else {
-//       counter += Number(counterNumber.counter);
-//       counterId = counterNumber.id;
-//       CounterModel.update({ counter: counter }, { where: { id: counterId } });
-//     }
-//     const awbNumber = counterId.toString() + CounterModel.pad(counter, 6);
+  output.success = false;
+  const code = await CodeModel.findOne({ where: { id: req.params.codeId }});
+  if (code === null) {
+    output.error = "Code not found";
+    return res.status(404).send(output);
+  }
 
-//     // create billing
+  const post = await PostModel.findOne({ where: { id: req.params.postId }});
+  if (post === null) {
+    output.error = "Post not found";
+    return res.status(404).send(output);
+  }  
 
-//     // billing ID
-//     let counterBill = 1;
-//     const counterBilling = await CounterModel.findOne({
-//       where: { name: "BILLING", month_year: month_year },
-//     });
-//     let billingId;
-//     if (counterBilling === null) {
-//       billingId = await CounterModel.generateId();
-//       CounterModel.create({
-//         id: billingId,
-//         name: "BILLING",
-//         month_year: month_year,
-//         counter: 1,
-//       });
-//     } else {
-//       counterBill += Number(counterBilling.counter);
-//       billingId = counterBilling.id;
-//       CounterModel.update({ counter: counterBill }, { where: { id: billingId } });
-//     }
-//     const billingIdCounter = billingId.toString() + CounterModel.pad(counterBill, 6);
+  try {
+    const order = await Order.findOne({ where: { id: req.params.orderId }});
 
-//     // voucher amount
-//     let voucher_amount = 0;
-//     // set up for later
+    const track = await Tracking.create({
+      codeId: req.params.codeId,
+      postId: req.params.postId,
+      userId: req.jwt.userId,
+      description: req.body.description,
+    });
 
-//     // insurance amount
-//     let insurance_amount = 0;
-//     if (req.body.insurance) {
-//       // insurance is 0.02% from total item invoice.
-//       insurance_amount = Number(req.body.itemValue) * 0.02 / 100;
-//     }
+    track.setOrder(order);
+    output.success = true;
+    res.send(output);
+  } catch (err) {
+    res.status(500).send(err);
+  }
+};
 
-//     // calculate the main amount price
-//     let amount_price = 0;
-//     let serviceId = req.body.serviceId;
-//     let weight = req.body.itemWeight;
-//     let height = req.body.itemHeight;
-//     let width = req.body.itemWidth;
-//     let long = req.body.itemLong;
+exports.trackOrder = (req, res) => {
+  if (!req.query.id) {
+    output.success = false;
+    output.error = "Need to pass Order Id as Parameter";
+    return res.status(400).send(output);
+  }
+  let id = req.query.id;
+  id = id.split(",");
 
-//     amount_price = await ServiceModel.prices(serviceId, weight, height, width, long);
-
-//     // calculate total price
-//     let total_amount = Number(amount_price.price) - Number(voucher_amount) + Number(insurance_amount);
-
-//     BillingModel.create({
-//       id: billingIdCounter,
-//       voucherAmount: voucher_amount,
-//       insuranceAmount: insurance_amount,
-//       Amount: amount_price.price,
-//       totalAmount: total_amount,
-//       paid: false,
-//       Order: {
-//         id: awbNumber,
-//         senderFullName: req.body.senderFullName,
-//         senderPhoneNumber: req.body.senderPhoneNumber,
-//         senderOriginId: req.body.senderOriginId,
-//         senderAddress: req.body.senderAddress,
-//         senderPostCode: req.body.senderPostCode,
-//         recipientFullName: req.body.recipientFullName,
-//         recipientPhoneNumber: req.body.recipientPhoneNumber,
-//         recipientDestinationId: req.body.recipientDestinationId,
-//         recipientAddress: req.body.recipientAddress,
-//         recipientPostCode: req.body.recipientPostCode,
-//         serviceId: req.body.serviceId,
-//         itemName: req.body.itemName,
-//         itemTypeId: req.body.itemTypeId,
-//         itemWeight: req.body.itemWeight,
-//         itemQty: req.body.itemQty,
-//         itemDimension:
-//           req.body.itemWidth +
-//           "x" +
-//           req.body.itemHeight +
-//           "x" +
-//           req.body.itemLong,
-//         itemValue: req.body.itemValue,
-//         insurance: req.body.insurance,
-//         voucherId: req.body.voucherId,
-//       }
-//     }, {
-//       include: [ BillingModel.Order ]
-//     })
-//       .then((data) => {
-
-//         output.output = {
-//           orderId: data.id,
-//           billingId: billingIdCounter,
-//         };
-//         output.success = true;
-//         output.message = "Order successfully created";
-//         if (socket) {
-//           // do le notif
-//         }
-//         res.send(output);
-//       })
-//       .catch((err) => {
-//         // if this happens then counter will still updated as the order id was created
-//         let error_messages = [];
-//         if (err.name === "SequelizeValidationError") {
-//           const errors = err.errors;
-//           errors.forEach((value) => {
-//             error_messages.push(value.path + " can not be empty!");
-//           });
-//         } else {
-//           error_messages.push(
-//             "Something wrong happened at the kitchen, my bad"
-//           );
-//         }
-//         output.output = null;
-//         output.message = error_messages;
-//         output.success = false;
-//         res.status(400).send(output);
-//       });
+  Order.findAll({
+    where:
+    {
+      id: [...id]
+    },
+    include: [
+      {
+        model: Tracking,
+      }
+    ]
+  })
+  .then(data => res.send(data))
+  .catch(err => res.status(500).send(err));
+}

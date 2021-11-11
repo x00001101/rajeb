@@ -10,7 +10,6 @@ const Order = db.define(
       primaryKey: true,
     },
     senderId: DataTypes.STRING,
-    courierId: DataTypes.STRING,
     senderFullName: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -93,7 +92,7 @@ const Billing = db.define(
     },
     voucherAmount: DataTypes.DECIMAL(10, 2),
     insuranceAmount: DataTypes.DECIMAL(10, 2),
-    Amount: DataTypes.DECIMAL(10, 2),
+    serviceAmount: DataTypes.DECIMAL(10, 2),
     totalAmount: DataTypes.DECIMAL(10, 2),
     paid: DataTypes.BOOLEAN,
   },
@@ -107,7 +106,7 @@ const Billing = db.define(
   }
 );
 
-Order.hasOne(Billing);
+Order.hasOne(Billing, { onDelete: 'cascade' });
 Billing.belongsTo(Order);
 
 const Tracking = db.define("Tracking", {
@@ -117,7 +116,7 @@ const Tracking = db.define("Tracking", {
   description: DataTypes.TEXT,
 });
 
-Order.hasMany(Tracking);
+Order.hasMany(Tracking, { onDelete: 'cascade' });
 Tracking.belongsTo(Order);
 
 exports.Order = Order;

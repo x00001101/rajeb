@@ -5,7 +5,7 @@ exports.createNew = async (req, res) => {
   const dataRegion = await Region.getFullRegionName(req.body.region_id);
   const regencyDataName = dataRegion.District.Regency.name;
   const regencyName = regencyDataName.split(" ");
-  const dpId = req.body.id;
+  const postId = req.body.id;
   const regionName =
     dataRegion.name +
     ", " +
@@ -15,7 +15,7 @@ exports.createNew = async (req, res) => {
     ", " +
     dataRegion.District.Regency.Province.name;
   const Post = {
-    id: dpId,
+    id: postId,
     name: req.body.name,
     regionId: req.body.region_id,
     regionName: regionName,
