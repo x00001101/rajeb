@@ -5,6 +5,12 @@ info:
   version: 0.1.0
 servers:
   - url: http
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
 paths:
   /users:
     post:
@@ -33,7 +39,7 @@ paths:
                   example: themostepicpasswordofalltime
       
       responses:
-        '200':    # status code
+        200:    # status code
           description: A JSON array of output data
           content:
             application/json:
@@ -42,7 +48,7 @@ paths:
                   success:
                     type: boolean
                   message: 
-                    type: string
+                    type: array
                   output:
                     type: object
                     properties:
@@ -55,3 +61,23 @@ paths:
                       refreshToken:
                         type: string
                         description: need to pass this token to create new accessToken at /auth/refresh
+    get: 
+      security:
+        - bearerAuth: []
+      summary: Find all user
+      tags:
+        - user
+      description: get all data user from server, permission level Admin or more
+      responses:
+        200:
+          description: Object users
+  /users/:userId:
+    get:
+      security:
+        - bearerAuth: []
+      summary: Find one user
+      tags: 
+        - user
+      responses:
+        200:
+          description: Object single user
