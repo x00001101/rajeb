@@ -13,6 +13,6 @@ git clone https://github.com/x00001101/rajeb.git
 ```
 Then start the server:
 ```
-npm build
+node server.js build insert
 ```
 API documentation [https://x00001101.github.io/rajeb-docs](https://x00001101.github.io/rajeb-docs)
