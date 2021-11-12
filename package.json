@@ -6,8 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "test": "nodemon server.js",
-    "build": "node server.js build",
-    "build-database": "node server.js build insert"
+    "build": "npm i&&node server.js build insert"
   },
   "repository": {
     "type": "git",
@@ -23,7 +22,7 @@
   "bugs": {
     "url": "https://github.com/x00001101/rajeb/issues"
   },
-  "homepage": "https://github.com/x00001101/rajeb#readme",
+  "homepage": "https://x00001101.github.io/rajeb-docs",
   "dependencies": {
     "body-parser": "^1.19.0",
     "dotenv": "^10.0.0",

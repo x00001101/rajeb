@@ -15,7 +15,7 @@ exports.routesConfig = (app) => {
 
   app.get("/services", [ServiceController.getAllServicesData]);
 
-  app.post("/prices/:serviceId", [
+  app.post("/prices", [
     DataValidatorMiddleware.verifyDataRequestForGetPrice,
     ServiceController.getPrice,
   ]);
