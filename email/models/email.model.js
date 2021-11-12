@@ -17,7 +17,7 @@ exports.sendEmail = (fields) => {
     contentHtml = "copy this link and paste it on browser: " + fields.url;
   }
 
-  if (process.env.NODE_ENV === "development") {
+  // if (process.env.NODE_ENV === "development") {
     let transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
       port: 465,
@@ -46,5 +46,5 @@ exports.sendEmail = (fields) => {
       }
       console.log("Sent to ", email);
     });
-  }
+  // }
 };
