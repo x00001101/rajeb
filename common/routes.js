@@ -7,6 +7,10 @@ const DataValidatorMiddleware = require("./middlewares/verify.data.middleware");
 const SUPER_USER = process.env.SUPER_USER;
 
 exports.routesConfig = (app) => {
+  app.get("/", (req, res) => {
+    res.send({message: "You are currently accessing the Rest API for the JEB expedition system for more detailed information please visit https://x00001101.github.io/rajeb-docs"})
+  });
+  
   app.get("/regions", [RegionController.getRegion]);
 
   app.post("/converters", [
