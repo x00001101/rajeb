@@ -15,3 +15,4 @@ Then start the server:
 ```
 npm build
 ```
+API documentation [https://x00001101.github.io/rajeb-docs](https://x00001101.github.io/rajeb-docs)
