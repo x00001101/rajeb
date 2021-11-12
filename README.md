@@ -1,4 +1,17 @@
-# rajeb
+# RAJEB
 Rest API JEB expedition system
 
-test for dev_main branch
+## To run it locally
+### Requirements
+1. node.js
+2. mysql
+
+#### Steps
+Clone this repository:
+```
+git clone https://github.com/x00001101/rajeb.git
+```
+Then start the server:
+```
+npm build
+```
