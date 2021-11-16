@@ -1,9 +1,14 @@
 const Converter = require("../models/converter.model");
 
 exports.setNewConverter = (req, res) => {
-  Converter.create({
-    value: req.body.converterValue,
-  })
+  Converter.upsert(
+    {
+      value: req.body.converterValue,
+    },
+    {
+      where: { id: 1 },
+    }
+  )
     .then((data) => {
       let output = {};
       output.success = true;

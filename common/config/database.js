@@ -26,7 +26,7 @@ sequelize
 if (process.argv[2] === "build") {
   sequelize.sync().then(() => {
     if (process.argv[3] === "insert") {
-      let file_path = path.join(__dirname, "..", "config", "indonesia.sql");
+      let file_path = path.join(__dirname, "..", "config", "sync.sql");
       let sql_queries = fs.readFileSync(file_path, "utf8");
       sequelize.query(sql_queries);
     }

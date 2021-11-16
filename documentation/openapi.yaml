@@ -4,7 +4,7 @@ info:
   description: REST API for JEB Express
   version: 0.1.0
 servers:
-  - url: http
+  - url: https://rajeb-test-server.herokuapp.com
 components:
   securitySchemes:
     bearerAuth:
@@ -17,7 +17,7 @@ paths:
       summary: Add new user
       tags:
         - user
-      description: ""
+      description: "Permission Level Enumeration<ul><li>1=Guest,</li><li>5=Customer,</li><li>10=Courier,</li><li>2063=Admin,</li><li>6159=Super User</li></ul>"
       requestBody:
         description: ""
         required: true
@@ -37,6 +37,10 @@ paths:
                 password:
                   type: string
                   example: themostepicpasswordofalltime
+                permissionLevel:
+                  type: string
+                  example: 1
+                  description: type ENUM with values `1`,`5`,`15`,`2063`,`6159`
 
       responses:
         200: # status code
@@ -59,6 +63,8 @@ paths:
                       refreshToken:
                         type: string
                         description: need to pass this token to create new accessToken at /auth/refresh
+        400: 
+          description: Bad request
     get:
       security:
         - bearerAuth: []
@@ -86,6 +92,50 @@ paths:
       responses:
         200:
           description: Object single user
+    patch:
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          schema: 
+            type: string
+          required: true
+      summary: Update user data
+      description: "Requirements: <ul><li>Valid JWT</li><li>Minimum Permission Level is CUSTOMER</li><li>Active User</li><li>Only same user</li></ul>"
+      tags:
+        - user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                fullName:
+                  type: string
+                phone_number:
+                  type: string
+                email: 
+                  type: string
+      responses:
+        200:
+          description: User data updated
+    delete:
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          schema: 
+            type: string
+          required: true
+      summary: Delete user data
+      tags: 
+        - user
+      description: "Requirements: <ul><li>Valid JWT</li><li>Minimum Permission Level is ADMIN</li>"
+      responses:
+        204: 
+          description: User deleted
   /auth:
     post:
       summary: To get accessToken and refreshToken
@@ -103,16 +153,8 @@ paths:
                 password:
                   type: string
       responses:
-        200:
-          description: accessToken and refreshToken
-          content:
-            application/json:
-              schema:
-                properties:
-                  accessToken:
-                    type: string
-                  refreshToken:
-                    type: string
+        201:
+          description: Id, accessToken and refreshToken
   /auth/refresh:
     post:
       security:
@@ -223,12 +265,68 @@ paths:
       responses: 
         200:
           description: ok
-          content:
-            application/json:
-              schema:
-                properties:
-                  orderData:
-                    type: object
-                    properties:
-                      Trackings: 
-                        type: array
+  /services:
+    post:
+      summary: Create new service
+      security:
+        - bearerAuth: []
+      description: "Requirements:<ul><li>Valid JWT</li><li>Minimum permission is SUPER USER</li></ul>"
+      requestBody:
+        description: More information on schema
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                id: 
+                  type: string
+                  description: ID must be unique
+                name:
+                  type: string
+                set_price: 
+                  type: integer
+                description:
+                  type: string
+                  description: Optional
+      tags:
+        - service
+      responses:
+        201:
+          description: New service created
+    get: 
+      summary: Find all services
+      tags: 
+        - service
+      responses:
+        200:
+          description: OK
+  /regions:
+    get:
+      description: "/regions?src=v&val=kutisari<br>add parrent id for more specific result<br>/regions?src=v&val=kutisari&pid=3578050"
+      tags:
+        - common
+      summary: To get region id
+      parameters:
+        - in: query
+          name: src
+          schema: 
+            type: string
+          description: "`p`rovince, `r`egions, `d`istrict, `v`illages"
+          example: v
+          required: true
+        - in: query
+          name: val
+          schema:
+            type: string
+          description: "search value"
+          example: kutisari
+          required: true
+        - in: query
+          name: pid
+          schema:
+            type: string
+          description: Parrent id for villages is districts, districts is regions, regions is provinces
+      responses:
+        200:
+          description: Ok
+    

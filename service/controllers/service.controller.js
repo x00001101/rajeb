@@ -14,7 +14,7 @@ exports.createNewService = (req, res) => {
     .then(() => {
       output.success = true;
       output.message = "New service created!";
-      res.send(output);
+      res.status(201).send(output);
     })
     .catch((err) => res.status(400).send(err));
 };
@@ -27,11 +27,17 @@ exports.getAllServicesData = (req, res) => {
 
 exports.getPrice = async (req, res) => {
   let weight = req.body.item_weight;
-  let height = req.body.item_height ;
+  let height = req.body.item_height;
   let width = req.body.item_width;
   let long = req.body.item_long;
   let serviceId = req.body.serviceId;
 
-  const data = await ServiceModel.prices(serviceId,weight,height,width,long);
+  const data = await ServiceModel.prices(
+    serviceId,
+    weight,
+    height,
+    width,
+    long
+  );
   res.send(data);
 };

@@ -70,8 +70,8 @@ exports.createUser = (req, res) => {
 
         output.success = true;
         output.messages = [
-        "New account created successfully!",
-        "Activation e-mail has been sent!, check your inbox / spam folder"
+          "New account created successfully!",
+          "Activation e-mail has been sent!, check your inbox / spam folder",
         ];
         output.output = {
           id: data.id,
@@ -88,7 +88,11 @@ exports.createUser = (req, res) => {
 
 exports.updateDataUser = (req, res) => {
   UserModel.update(
-    { firstName: req.body.firstName, lastName: req.body.lastName },
+    {
+      fullName: req.body.fullName,
+      phoneNumber: req.body.phone_number,
+      email: req.body.email,
+    },
     { where: { id: req.params.userId } }
   )
     .then((data) => {
