@@ -1,10 +1,12 @@
 const RegionController = require("./controllers/region.controller");
 const ConverterController = require("./controllers/converter.controller");
+const CodeController = require("./controllers/code.controller");
 const PermissionMiddleware = require("../auth/middlewares/auth.permission.middleware");
 const ValidationMiddleware = require("../auth/middlewares/auth.validation.middleware");
 const DataValidatorMiddleware = require("./middlewares/verify.data.middleware");
 
 const SUPER_USER = process.env.SUPER_USER;
+const ADMIN = process.env.ADMIN;
 
 exports.routesConfig = (app) => {
   app.get("/", (req, res) => {
@@ -24,5 +26,11 @@ exports.routesConfig = (app) => {
     ValidationMiddleware.validJWTNeeded,
     PermissionMiddleware.minimumPermissionLevelRequired(SUPER_USER),
     ConverterController.getAllConverter,
+  ]);
+
+  app.post("/codes", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.minimumPermissionLevelRequired(ADMIN),
+    CodeController.createNewCode
   ]);
 };

@@ -19,11 +19,12 @@ exports.routesConfig = (app, socket) => {
     OrderController.createNewOrder(socket),
   ]);
 
-  app.patch("/orders/:codeId/:postId/:orderId", [
+  app.patch("/orders/:codeId", [
     ValidationMiddleware.validJWTNeeded,
     PermissionMiddleware.onlyAdminAndPermitedPermissionLevelRequired(
       PERMITED_COURIER
     ),
+    DataValidatorMiddleware.verifyDataRequestForPatchingOrders,
     OrderController.patchOrder,
   ]);
 

@@ -173,14 +173,14 @@ exports.patchOrder = async (req, res) => {
   }
 
   output.success = false;
-  const code = await CodeModel.findOne({ where: { id: req.params.codeId }});
+  const code = await CodeModel.findOne({ where: { id: req.body.codeId }});
   if (code === null) {
     output.error = "Code not found";
     return res.status(404).send(output);
   }
 
-  const post = await PostModel.findOne({ where: { id: req.params.postId }});
-  if (post === null) {
+  const post = await PostModel.findOne({ where: { id: req.body.postId, type: req.body.postType }});
+  if (post === null && req.body.postId !== "") {
     output.error = "Post not found";
     return res.status(404).send(output);
   }  
@@ -189,8 +189,9 @@ exports.patchOrder = async (req, res) => {
     const order = await Order.findOne({ where: { id: req.params.orderId }});
 
     const track = await Tracking.create({
-      codeId: req.params.codeId,
-      postId: req.params.postId,
+      codeId: req.body.codeId,
+      postId: req.body.postId,
+      postType: req.body.postType,
       userId: req.jwt.userId,
       description: req.body.description,
     });

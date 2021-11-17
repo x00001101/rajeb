@@ -1,4 +1,4 @@
-const { DataTypes, Op } = require("sequelize");
+const { DataTypes } = require("sequelize");
 const db = require("../../common/config/database");
 
 const Post = db.define("Post", {
@@ -17,9 +17,10 @@ const Post = db.define("Post", {
   },
   regionName: DataTypes.STRING,
   type: {
-    type: DataTypes.ENUM("DP","GT"),
+    type: DataTypes.ENUM("DP","GT","TC"),
     allowNull: false,
     defaultValue: "DP",
+    comment: "DP-Drop Point, GT-Gateway, TC-Transit Center",
   }
 },
 {

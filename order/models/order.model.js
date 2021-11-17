@@ -110,8 +110,9 @@ Order.hasOne(Billing, { onDelete: 'cascade' });
 Billing.belongsTo(Order);
 
 const Tracking = db.define("Tracking", {
-  codeId: DataTypes.STRING,
-  postId: DataTypes.STRING,
+  codeId: DataTypes.STRING(10),
+  postId: DataTypes.STRING(10),
+  postType: DataTypes.STRING(5),
   userId: DataTypes.UUID,
   description: DataTypes.TEXT,
 });

@@ -132,3 +132,23 @@ exports.verifyDataRequestForCreatingNewService = async (req, res, next) => {
     return next();
   }
 };
+
+exports.verifyDataRequestForPatchingOrders = async (req, res, next) => {
+  if (req.body.constructor === Object && Object.keys(req.body).length === 0) {
+    output.message = "Need body data to pass!";
+    return res.status(400).send(output);
+  }
+
+  requirements = ["codeId","postId"];
+
+  error_fields = await checkRequirements(requirements, req);
+
+  output.fields = error_fields;
+  error_fields = [];
+  if (output.fields.length > 0) {
+    return res.status(400).send(output);
+  } else {
+    return next();
+  }
+
+}
