@@ -97,14 +97,16 @@ exports.createNewOrder = (socket) => {
 
     // get service price amount;
     let serviceAmount = 0;
-    const service = await ServiceModel.findOne({ where: { id: req.body.serviceId }});
+    const service = await ServiceModel.findOne({
+      where: { id: req.body.serviceId },
+    });
     if (service !== null) {
       serviceAmount = service.dataValues.setPrice;
     } else {
       output.success = false;
       output.error = "Not Found!";
       output.field = "Service Id";
-      output.message = "Service not found!"
+      output.message = "Service not found!";
       return res.status(404).send(output);
     }
 
@@ -112,12 +114,15 @@ exports.createNewOrder = (socket) => {
     let voucherAmount = 0;
     // get voucher amount from voucher id using model
     if (req.body.voucherId) {
-      const voucher = await VoucherModel.findOne({ where: { id: req.body.voucherId }});
+      const voucher = await VoucherModel.findOne({
+        where: { id: req.body.voucherId },
+      });
       if (voucher !== null) {
         const voucherVal = voucher.dataValues;
         // get voucher type;
         if (voucherVal.type === "PERCENT") {
-          voucherAmount = Number(serviceAmount) * Number(voucherVal.value) / 100; 
+          voucherAmount =
+            (Number(serviceAmount) * Number(voucherVal.value)) / 100;
         } else if (voucherVal.type === "VALUE") {
           voucherAmount = voucherVal.value;
         }
@@ -133,11 +138,12 @@ exports.createNewOrder = (socket) => {
     // set insurance amount
     let insuranceAmount = 0;
     if (req.body.insurance) {
-      insuranceAmount = Number(itemValue) * 0.02 / 100;
+      insuranceAmount = (Number(itemValue) * 0.02) / 100;
     }
 
     // set total amount;
-    const totalAmount = Number(serviceAmount) - Number(voucherAmount) + Number(insuranceAmount);
+    const totalAmount =
+      Number(serviceAmount) - Number(voucherAmount) + Number(insuranceAmount);
 
     const billingObject = {
       id: billingId,
@@ -148,15 +154,12 @@ exports.createNewOrder = (socket) => {
       paid: false,
     };
 
-    // insert data to table 
-    Promise.all([
-      Order.create(orderObject),
-      Billing.create(billingObject),
-    ])
-    .then(([order, billing]) => {
-      Promise(billing.setOrder(order));
-    })
-    .catch(err => res.status(500).send(err));
+    // insert data to table
+    Promise.all([Order.create(orderObject), Billing.create(billingObject)])
+      .then(([order, billing]) => {
+        Promise(billing.setOrder(order));
+      })
+      .catch((err) => res.status(500).send(err));
 
     output.success = true;
     output.awbNumber = awbNumber;
@@ -173,20 +176,23 @@ exports.patchOrder = async (req, res) => {
   }
 
   output.success = false;
-  const code = await CodeModel.findOne({ where: { id: req.body.codeId }});
+  const code = await CodeModel.findOne({ where: { id: req.body.codeId } });
   if (code === null) {
     output.error = "Code not found";
     return res.status(404).send(output);
   }
-
-  const post = await PostModel.findOne({ where: { id: req.body.postId, type: req.body.postType }});
-  if (post === null && req.body.postId !== "") {
-    output.error = "Post not found";
-    return res.status(404).send(output);
-  }  
+  if (req.body.postId) {
+    const post = await PostModel.findOne({
+      where: { id: req.body.postId, type: req.body.postType },
+    });
+    if (post === null && req.body.postId !== "") {
+      output.error = "Post not found";
+      return res.status(404).send(output);
+    }
+  }
 
   try {
-    const order = await Order.findOne({ where: { id: req.params.orderId }});
+    const order = await Order.findOne({ where: { id: req.params.orderId } });
 
     const track = await Tracking.create({
       codeId: req.body.codeId,
@@ -214,16 +220,15 @@ exports.trackOrder = (req, res) => {
   id = id.split(",");
 
   Order.findAll({
-    where:
-    {
-      id: [...id]
+    where: {
+      id: [...id],
     },
     include: [
       {
         model: Tracking,
-      }
-    ]
+      },
+    ],
   })
-  .then(data => res.send(data))
-  .catch(err => res.status(500).send(err));
-}
+    .then((data) => res.send(data))
+    .catch((err) => res.status(500).send(err));
+};

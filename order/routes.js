@@ -19,7 +19,7 @@ exports.routesConfig = (app, socket) => {
     OrderController.createNewOrder(socket),
   ]);
 
-  app.patch("/orders/:codeId", [
+  app.patch("/orders/:orderId", [
     ValidationMiddleware.validJWTNeeded,
     PermissionMiddleware.onlyAdminAndPermitedPermissionLevelRequired(
       PERMITED_COURIER
@@ -28,7 +28,5 @@ exports.routesConfig = (app, socket) => {
     OrderController.patchOrder,
   ]);
 
-  app.get("/tracking", [
-    OrderController.trackOrder,
-  ]);
+  app.get("/tracking", [OrderController.trackOrder]);
 };

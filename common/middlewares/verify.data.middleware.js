@@ -139,7 +139,7 @@ exports.verifyDataRequestForPatchingOrders = async (req, res, next) => {
     return res.status(400).send(output);
   }
 
-  requirements = ["codeId","postId"];
+  requirements = ["codeId"];
 
   error_fields = await checkRequirements(requirements, req);
 
@@ -150,5 +150,4 @@ exports.verifyDataRequestForPatchingOrders = async (req, res, next) => {
   } else {
     return next();
   }
-
-}
+};
