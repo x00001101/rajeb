@@ -15,7 +15,8 @@ const PERMITED_COURIER = Number(PERMITED_CUSTOMER) + Number(COURIER);
 exports.routesConfig = (app, socket) => {
   //create new order
   app.post("/orders", [
-    DataValidatorMiddleware.verifyDataRequestForOrderProcess,
+    ValidationMiddleware.validJWTNeededOrNext,
+    DataValidatorMiddleware.dataVerification("verifyDataRequestForOrderProcess"),
     OrderController.createNewOrder(socket),
   ]);
 
@@ -24,7 +25,7 @@ exports.routesConfig = (app, socket) => {
     PermissionMiddleware.onlyAdminAndPermitedPermissionLevelRequired(
       PERMITED_COURIER
     ),
-    DataValidatorMiddleware.verifyDataRequestForPatchingOrders,
+    DataValidatorMiddleware.dataVerification("verifyDataRequestForPatchingOrders"),
     OrderController.patchOrder,
   ]);
 

@@ -18,7 +18,7 @@ exports.routesConfig = (app) => {
   app.post("/converters", [
     ValidationMiddleware.validJWTNeeded,
     PermissionMiddleware.minimumPermissionLevelRequired(SUPER_USER),
-    DataValidatorMiddleware.verifyDataRequestForCreatingNewConverter,
+    DataValidatorMiddleware.dataVerification("verifyDataRequestForCreatingNewConverter"),
     ConverterController.setNewConverter,
   ]);
 

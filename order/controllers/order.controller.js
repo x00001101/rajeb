@@ -2,7 +2,7 @@ const { Order, Billing, Tracking } = require("../models/order.model");
 const { customAlphabet } = require("nanoid/async");
 const CounterModel = require("../../common/models/counter.model");
 const ServiceModel = require("../../service/models/service.model");
-const VoucherModel = require("../../voucher/models/voucher.model");
+const { Voucher, Pouch } = require("../../voucher/models/voucher.model");
 const CodeModel = require("../../common/models/code.model");
 const PostModel = require("../../post/models/post.model");
 
@@ -18,12 +18,89 @@ const generateBillingId = async () => {
 
 exports.createNewOrder = (socket) => {
   return async (req, res) => {
+    output = {};
     if (socket) {
       // here for notification
     }
     const serviceId = req.body.serviceId;
+
+    // this is billing
+
+    // get service price amount;
+    let serviceAmount = 0;
+    const service = await ServiceModel.findOne({
+      where: { id: req.body.serviceId },
+    });
+    if (service !== null) {
+      serviceAmount = service.dataValues.setPrice;
+    } else {
+      output.success = false;
+      output.error = "Not Found!";
+      output.field = "Service Id";
+      output.message = "Service not found!";
+      return res.status(404).send(output);
+    }
+
+    // set the voucher amount
+    let voucherAmount = 0;
+    // get voucher amount from voucher id using model
+    if (req.body.voucherId) {
+      // check if the user has the voucher
+
+      const voucher = await Voucher.findOne({
+        where: { id: req.body.voucherId },
+      });
+      if (voucher !== null) {
+        if (req.jwt) {
+          const pouch = await Pouch.findOne({
+            where: { userId: req.jwt.userId, voucherId: req.body.voucherId }
+          });
+          if (pouch === null) {
+            output.success = false;
+            output.error = "Not Found!";
+            output.field = "Voucher Id";
+            output.message = `User does not have the voucher ${req.body.voucherId}`;
+            return res.status(404).send(output);        
+          }
+          const pouchId = pouch.id;
+          // get voucher type;
+          if (voucher.type === "PERCENT") {
+            voucherAmount =
+              (Number(serviceAmount) * Number(voucher.value)) / 100;
+            if (voucherAmount > voucher.maxValue && voucher.maxValue > 0) {
+              voucherAmount = voucher.maxValue;
+            }
+          } else if (voucher.type === "VALUE") {
+            voucherAmount = voucher.value;
+          }
+
+        } else {
+          output.success = false;
+          output.message = "You need to login for using voucher";
+          return res.status(404).send(output);   
+        }
+      } else {
+        output.success = false;
+        output.error = "Not Found!";
+        output.field = "Voucher Id";
+        output.message = "Voucher not found!";
+        return res.status(404).send(output);
+      }
+    }
+
+    // set insurance amount
+    let insuranceAmount = 0;
+    if (req.body.insurance) {
+      insuranceAmount = (Number(req.body.itemValue) * 0.02) / 100;
+    }
+
+    // set total amount;
+    const totalAmount =
+      Number(serviceAmount) - Number(voucherAmount) + Number(insuranceAmount);
+
     // create AWB number
     // find service and month year in counter
+
     let counter = 1;
     const today = new Date();
     const month = today.getMonth() + 1; // this return month and change it so it returns 1 to 12
@@ -63,10 +140,14 @@ exports.createNewOrder = (socket) => {
     if (!req.body.itemLong) {
       req.body.itemLong = 0;
     }
-
+    let userId = null;
+    if (req.jwt) {
+      userId = req.jwt.userId;
+    }
     // this is order
     const orderObject = {
       id: awbNumber,
+      senderId: userId,
       senderFullName: req.body.senderFullName,
       senderPhoneNumber: req.body.senderPhoneNumber,
       senderOriginId: req.body.senderOriginId,
@@ -93,58 +174,7 @@ exports.createNewOrder = (socket) => {
       voucherId: req.body.voucherId,
     };
 
-    // this is billing
-
-    // get service price amount;
-    let serviceAmount = 0;
-    const service = await ServiceModel.findOne({
-      where: { id: req.body.serviceId },
-    });
-    if (service !== null) {
-      serviceAmount = service.dataValues.setPrice;
-    } else {
-      output.success = false;
-      output.error = "Not Found!";
-      output.field = "Service Id";
-      output.message = "Service not found!";
-      return res.status(404).send(output);
-    }
-
-    // set the voucher amount
-    let voucherAmount = 0;
-    // get voucher amount from voucher id using model
-    if (req.body.voucherId) {
-      const voucher = await VoucherModel.findOne({
-        where: { id: req.body.voucherId },
-      });
-      if (voucher !== null) {
-        const voucherVal = voucher.dataValues;
-        // get voucher type;
-        if (voucherVal.type === "PERCENT") {
-          voucherAmount =
-            (Number(serviceAmount) * Number(voucherVal.value)) / 100;
-        } else if (voucherVal.type === "VALUE") {
-          voucherAmount = voucherVal.value;
-        }
-      } else {
-        output.success = false;
-        output.error = "Not Found!";
-        output.field = "Voucher Id";
-        output.message = "Voucher not found!";
-        return res.status(404).send(output);
-      }
-    }
-
-    // set insurance amount
-    let insuranceAmount = 0;
-    if (req.body.insurance) {
-      insuranceAmount = (Number(itemValue) * 0.02) / 100;
-    }
-
-    // set total amount;
-    const totalAmount =
-      Number(serviceAmount) - Number(voucherAmount) + Number(insuranceAmount);
-
+    
     const billingObject = {
       id: billingId,
       voucherAmount: voucherAmount,
@@ -155,16 +185,36 @@ exports.createNewOrder = (socket) => {
     };
 
     // insert data to table
-    Promise.all([Order.create(orderObject), Billing.create(billingObject)])
+    /*Promise.all([Order.create(orderObject), Billing.create(billingObject)])
       .then(([order, billing]) => {
         Promise(billing.setOrder(order));
       })
-      .catch((err) => res.status(500).send(err));
+      .catch((err) => {
+        return res.status(500).send(err)
+      });*/
 
-    output.success = true;
-    output.awbNumber = awbNumber;
-    output.billingId = billingId;
-    res.send(output);
+    const newOrder = await Order.create(orderObject);
+    
+    try {
+      const newBilling = await Billing.create(billingObject);
+      
+      newBilling.setOrder(newOrder);
+
+      if (pouchId) {
+        Pouch.destroy({ 
+          where: {
+            id: pouchId
+          }
+        });
+      }
+
+      output.success = true;
+      output.awbNumber = awbNumber;
+      output.billingId = billingId;
+      res.send(output);
+    } catch (err) {
+      res.status(500).send(err);
+    }
   };
 };
 

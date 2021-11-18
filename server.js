@@ -16,6 +16,7 @@ const OrderRoutes = require("./order/routes");
 const CommonRoutes = require("./common/routes");
 const PostRoutes = require("./post/routes");
 const ServiceRoutes = require("./service/routes");
+const VoucherRoutes = require("./voucher/routes");
 
 const PORT = process.env.PORT || 3000;
 httpServer.listen(PORT, () => {
@@ -68,3 +69,4 @@ OrderRoutes.routesConfig(app, socketServer);
 CommonRoutes.routesConfig(app);
 PostRoutes.routesConfig(app);
 ServiceRoutes.routesConfig(app);
+VoucherRoutes.routesConfig(app);
