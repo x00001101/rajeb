@@ -7,6 +7,7 @@ const DataValidatorMiddleware = require("./middlewares/verify.data.middleware");
 
 const SUPER_USER = process.env.SUPER_USER;
 const ADMIN = process.env.ADMIN;
+const COURIER = process.env.COURIER;
 
 exports.routesConfig = (app) => {
   app.get("/", (req, res) => {
@@ -32,5 +33,11 @@ exports.routesConfig = (app) => {
     ValidationMiddleware.validJWTNeeded,
     PermissionMiddleware.minimumPermissionLevelRequired(ADMIN),
     CodeController.createNewCode
+  ]);
+
+  app.get("/codes", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.minimumPermissionLevelRequired(COURIER),
+    CodeController.getAllCodes
   ]);
 };

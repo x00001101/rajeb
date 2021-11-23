@@ -18,6 +18,10 @@ const Service = db.define("Service", {
 
 Service.prices = async (serviceId, weight, height, width, long) => {
   const output = {};
+  output.serviceId = serviceId;
+  output.weight = weight;
+  output.height = height;
+  output.long = long;
   let service = await Service.findOne({ where: { id: serviceId } });
   if (height != 0 && width != 0 && long != 0) {
     const converterValue = await ConverterModel.findOne();
