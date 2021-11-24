@@ -233,11 +233,13 @@ exports.patchOrder = async (req, res) => {
   }
   if (req.body.postId) {
     const post = await PostModel.findOne({
-      where: { id: req.body.postId, type: req.body.postType },
+      where: { id: req.body.postId },
     });
     if (post === null && req.body.postId !== "") {
       output.error = "Post not found";
       return res.status(404).send(output);
+    } else {
+      const postType = post.type;
     }
   }
 
@@ -247,7 +249,7 @@ exports.patchOrder = async (req, res) => {
     const track = await Tracking.create({
       codeId: req.body.codeId,
       postId: req.body.postId,
-      postType: req.body.postType,
+      postType: postType,
       userId: req.jwt.userId,
       description: req.body.description,
     });

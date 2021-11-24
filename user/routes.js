@@ -54,4 +54,10 @@ exports.routesConfig = (app) => {
     PermissionMiddleware.onlySameUserOrAdminCanDoThisAction,
     UserController.changePassword,
   ]);
+
+  //get id
+  app.get("/usersData", [
+    ValidationMiddleware.validJWTNeeded,
+    UserController.getDataFromJWT
+  ]);
 };

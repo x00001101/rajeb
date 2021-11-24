@@ -27,7 +27,7 @@ exports.onlyAdminAndPermitedPermissionLevelRequired = (
     if (user_permission_level === permited_permission_level) {
       return next();
     } else {
-      if (user_permission_level & ADMIN_PERMISSION) {
+      if (user_permission_level & ADMIN_PERMISSION || user_permission_level & SUPER_USER_PERMISSION) {
         return next();
       } else {
         return res.status(403).send({ error: "You are not permited" });

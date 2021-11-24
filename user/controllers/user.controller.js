@@ -232,3 +232,15 @@ exports.changePassword = (req, res) => {
       res.status(500).send();
     });
 };
+
+exports.getDataFromJWT = (req, res) => {
+  const UserData = {
+    id: req.jwt.userId,
+    email: req.jwt.email,
+    permissionLevel: req.jwt.permission_level,
+    active: req.jwt.active,
+    name: req.jwt.name,
+    phoneNumber: req.jwt.phone_number
+  }
+  res.send(UserData);
+};
