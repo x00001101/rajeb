@@ -1,9 +1,95 @@
 const { Op } = require("sequelize");
-const UserModel = require("../models/user.model");
-const KeyModel = require("../../key/models/key.model");
+// const UserModel = require("../models/user.model");
+// const KeyModel = require("../../key/models/key.model");
+const models = require("../../common/models/main.model");
+const UserModel = models.User;
+const KeyModel = models.Key;
 const crypto = require("crypto");
 const jwtSecret = process.env.JWT_SECRET,
   jwt = require("jsonwebtoken");
+const EmailModel = require("../../email/models/email.model");
+
+const generateOtp = () => {
+  let len = 6;
+  let result = '';
+  let characters = '0123456789';
+  let charactersLength = characters.length;
+  for (var i = 0; i < len; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+}
+
+const generateKey = async (len) => {
+  let result = '';
+  let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  var charactersLength = characters.length;
+  for ( var i = 0; i < len; i++ ) {
+      result += characters.charAt(Math.floor(Math.random() * 
+  charactersLength));
+   }
+  let newKey = result;
+  let data = await KeyModel.findOne({ where: { activeKey: newKey }});
+  return data === null ? newKey : generateKey(len);
+};
+
+const createNewUser = async (host, newUser, result) => {
+  let newKey = await generateKey(128);
+  let expired = new Date();
+  expired.setDate(expired.getDate() + 1);
+
+  try {
+    const UserData = await UserModel.create(newUser);
+
+    const key = {
+      otp: null,
+      activeKey: newKey,
+      expiredDate: expired,
+      enum: 1,
+    };
+
+    const KeyData = await KeyModel.create(key);
+
+    KeyData.setUser(UserData);
+
+    const fields = {
+      email: newUser.email,
+      type: "EMAIL_VERIFICATION",
+      url: host + "/emails/verify?verification_token=" + newKey,
+      key: newKey,
+    };
+    
+    EmailModel.sendEmail(fields);
+
+    result(null, UserData);
+  } catch (err) {
+    console.log(err);
+    result(err, null);
+  }
+
+  /*UserModel.create(newUser)
+    .then((data) => {
+      let expired = new Date();
+      expired.setDate(expired.getDate() + 1);
+      const keyData = {
+        userId: data.id,
+        otp: null,
+        activeKey: newKey,
+        expiredDate: expired,
+        enum: 1,
+      };
+      KeyModel.upsert(keyData, { where: { userId: data.id, enum: 1 } });
+      const fields = {
+        email: data.email,
+        type: "EMAIL_VERIFICATION",
+        url: host + "/emails/verify?verification_token=" + newKey,
+        key: newKey,
+      };
+      EmailModel.sendEmail(fields);
+      result(null, data);
+    })
+    .catch((err) => result(err, null));*/
+};
 
 exports.createUser = (req, res) => {
   if (req.body.constructor === Object && Object.keys(req.body).length === 0) {
@@ -31,7 +117,7 @@ exports.createUser = (req, res) => {
   };
 
   let host = req.protocol + "://" + req.get("host");
-  UserModel.createNewUser(host, user, (err, data) => {
+  createNewUser(host, user, (err, data) => {
     let output = {};
     if (err) {
       if (err.name == "SequelizeUniqueConstraintError") {
@@ -80,6 +166,7 @@ exports.createUser = (req, res) => {
         };
         res.send(output);
       } catch (err) {
+        console.log(err);
         res.status(500).send(err);
       }
     }

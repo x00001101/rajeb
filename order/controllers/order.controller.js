@@ -1,4 +1,5 @@
-const { Order, Billing, Tracking } = require("../models/order.model");
+// const { Order, Billing, Tracking } = require("../models/order.model");
+const { User, Order, Billing, Tracking } = require("../../common/models/main.model");
 const { customAlphabet } = require("nanoid/async");
 const CounterModel = require("../../common/models/counter.model");
 const ServiceModel = require("../../service/models/service.model");
@@ -43,8 +44,9 @@ exports.createNewOrder = (socket) => {
 
     // set the voucher amount
     let voucherAmount = 0;
+    let pouchId = null;
     // get voucher amount from voucher id using model
-    if (req.body.voucherId) {
+    if (req.body.voucherId || req.body.voucherId != "") {
       // check if the user has the voucher
 
       const voucher = await Voucher.findOne({
@@ -62,7 +64,7 @@ exports.createNewOrder = (socket) => {
             output.message = `User does not have the voucher ${req.body.voucherId}`;
             return res.status(404).send(output);        
           }
-          const pouchId = pouch.id;
+          pouchId = pouch.id;
           // get voucher type;
           if (voucher.type === "PERCENT") {
             voucherAmount =
@@ -184,18 +186,14 @@ exports.createNewOrder = (socket) => {
       paid: false,
     };
 
-    // insert data to table
-    /*Promise.all([Order.create(orderObject), Billing.create(billingObject)])
-      .then(([order, billing]) => {
-        Promise(billing.setOrder(order));
-      })
-      .catch((err) => {
-        return res.status(500).send(err)
-      });*/
-
-    const newOrder = await Order.create(orderObject);
-    
     try {
+      const newOrder = await Order.create(orderObject);
+      
+      if (userId) {
+        const UserData = await User.findOne({ where: { id: userId }});
+        newOrder.setUser(UserData);
+      }
+
       const newBilling = await Billing.create(billingObject);
       
       newBilling.setOrder(newOrder);
@@ -213,7 +211,8 @@ exports.createNewOrder = (socket) => {
       output.billingId = billingId;
       res.send(output);
     } catch (err) {
-      res.status(500).send(err);
+      console.log(err);
+      res.status(500).send({error: err});
     }
   };
 };
