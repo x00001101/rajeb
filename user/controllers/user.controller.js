@@ -11,25 +11,25 @@ const EmailModel = require("../../email/models/email.model");
 
 const generateOtp = () => {
   let len = 6;
-  let result = '';
-  let characters = '0123456789';
+  let result = "";
+  let characters = "0123456789";
   let charactersLength = characters.length;
   for (var i = 0; i < len; i++) {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
   return result;
-}
+};
 
 const generateKey = async (len) => {
-  let result = '';
-  let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = "";
+  let characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   var charactersLength = characters.length;
-  for ( var i = 0; i < len; i++ ) {
-      result += characters.charAt(Math.floor(Math.random() * 
-  charactersLength));
-   }
+  for (var i = 0; i < len; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
   let newKey = result;
-  let data = await KeyModel.findOne({ where: { activeKey: newKey }});
+  let data = await KeyModel.findOne({ where: { activeKey: newKey } });
   return data === null ? newKey : generateKey(len);
 };
 
@@ -58,7 +58,7 @@ const createNewUser = async (host, newUser, result) => {
       url: host + "/emails/verify?verification_token=" + newKey,
       key: newKey,
     };
-    
+
     EmailModel.sendEmail(fields);
 
     result(null, UserData);
@@ -253,6 +253,7 @@ exports.resetPasswordForm = (req, res) => {
         [Op.gt]: new Date(),
       },
     },
+    include: ["User"],
   }).then((data) => {
     if (data === null) {
       return res.status(404).send({
@@ -268,10 +269,10 @@ exports.resetPasswordForm = (req, res) => {
     // update password
     UserModel.update(
       { password: req.body.new_password },
-      { where: { id: data.userId } }
+      { where: { id: data.User.id } }
     );
     // destroy key
-    KeyModel.destroy({ where: { userId: data.userId, enum: 2 } });
+    KeyModel.destroy({ where: { id: data.id, enum: 2 } });
     res.send({ message: "Password has been changed, try login" });
   });
 };
@@ -327,7 +328,7 @@ exports.getDataFromJWT = (req, res) => {
     permissionLevel: req.jwt.permission_level,
     active: req.jwt.active,
     name: req.jwt.name,
-    phoneNumber: req.jwt.phone_number
-  }
+    phoneNumber: req.jwt.phone_number,
+  };
   res.send(UserData);
 };

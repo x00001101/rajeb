@@ -4,9 +4,7 @@ const ValidationMiddleware = require("../auth/middlewares/auth.validation.middle
 
 exports.routesConfig = (app) => {
   //user email verification
-  app.get("/emails/verify", [
-    EmailController.userEmailVerification,
-  ]);
+  app.get("/emails/verify", [EmailController.userEmailVerification]);
 
   //request new email verification
   app.get("/emails/requestNewVerification", [
@@ -17,6 +15,7 @@ exports.routesConfig = (app) => {
 
   //request reset password
   app.post("/emails/resetPasswordRequest", [
+    ValidationMiddleware.validJWTNeeded,
     EmailController.resetPasswordRequest,
   ]);
 };

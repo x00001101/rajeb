@@ -8,25 +8,25 @@ const models = require("../../common/models/main.model"),
 
 const generateOtp = () => {
   let len = 6;
-  let result = '';
-  let characters = '0123456789';
+  let result = "";
+  let characters = "0123456789";
   let charactersLength = characters.length;
   for (var i = 0; i < len; i++) {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
   return result;
-}
+};
 
 const generateKey = async (len) => {
-  let result = '';
-  let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = "";
+  let characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   var charactersLength = characters.length;
-  for ( var i = 0; i < len; i++ ) {
-      result += characters.charAt(Math.floor(Math.random() * 
-  charactersLength));
-   }
+  for (var i = 0; i < len; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
   let newKey = result;
-  let data = await KeyModel.findOne({ where: { activeKey: newKey }});
+  let data = await KeyModel.findOne({ where: { activeKey: newKey } });
   return data === null ? newKey : generateKey(len);
 };
 
@@ -39,20 +39,25 @@ exports.userEmailVerification = async (req, res) => {
         [Op.gt]: new Date(),
       },
     },
-    include: ['User']
+    include: ["User"],
   });
   if (key === null) {
-    return res.status(404).send({message: "Your activation key is either expired or unavailable",});
+    return res.status(404).send({
+      message: "Your activation key is either expired or unavailable",
+    });
   }
-  const user = await UserModel.update({ active: 1 }, { where: { id: key.User.id }});
-  // delete key 
-  KeyModel.destroy({ where: { id: key.id }});
+  const user = await UserModel.update(
+    { active: 1 },
+    { where: { id: key.User.id } }
+  );
+  // delete key
+  KeyModel.destroy({ where: { id: key.id } });
   res.send({ message: "Your email was activated!" });
 };
 
 exports.requestNewVerification = async (req, res) => {
   let newKey = await generateKey(128);
-  const user = await UserModel.findOne({ where: { id: req.jwt.userId }});
+  const user = await UserModel.findOne({ where: { id: req.jwt.userId } });
   if (user === null) {
     return res.status(404).send({ message: "User not found!" });
   }
@@ -64,9 +69,11 @@ exports.requestNewVerification = async (req, res) => {
     expiredDate: expired,
     enum: 1,
   };
-  const previous_key = await KeyModel.findOne({ where: { userId: req.jwt.userId, enum: 1 }});
+  const previous_key = await KeyModel.findOne({
+    where: { userId: req.jwt.userId, enum: 1 },
+  });
   if (previous_key) {
-    KeyModel.destroy({ where: { id: previous_key.id }});
+    KeyModel.destroy({ where: { id: previous_key.id } });
   }
   try {
     const key = await KeyModel.create(KeyData);
@@ -96,21 +103,25 @@ exports.resetPasswordRequest = async (req, res) => {
   let newKey = await generateKey(128);
   // find registered email
   const user = await UserModel.findOne({
-    where: { email: req.body.email }
+    where: { email: req.body.email },
   });
 
   if (user === null) {
     return res.status(404).send({ message: "E-mail not registered!" });
   }
+  const expired = new Date();
+  expired.setDate(expired.getDate() + 1);
   const KeyData = {
     otp: null,
     activeKey: newKey,
     expiredDate: expired,
     enum: 2,
   };
-  const previous_key = await KeyModel.findOne({ where: { userId: req.jwt.userId, enum: 2 }});
+  const previous_key = await KeyModel.findOne({
+    where: { userId: req.jwt.userId, enum: 2 },
+  });
   if (previous_key) {
-    KeyModel.destroy({ where: { id: previous_key.id }});
+    KeyModel.destroy({ where: { id: previous_key.id } });
   }
   try {
     const key = await KeyModel.create(KeyData);
@@ -131,42 +142,4 @@ exports.resetPasswordRequest = async (req, res) => {
   } catch (err) {
     res.status(500).send(err);
   }
-
-/*    .then((data) => {
-      if (data === null) {
-        return res.status(404).send({ message: "E-mail not registered!" });
-      }
-
-      const expired = new Date();
-      expired.setDate(expired.getDate() + 1);
-      const Key = {
-        userId: data.id,
-        otp: null,
-        activeKey: newKey,
-        expiredDate: expired,
-        enum: 2,
-      };
-      KeyModel.upsert(Key, { where: { userId: data.id, enum: 2 } });
-
-      const fields = {
-        email: req.body.email,
-        type: "PASSWORD_RESET",
-        url:
-          req.protocol +
-          "://" +
-          req.get("host") +
-          "/password/reset?reset_token=" +
-          newKey,
-        key: newKey,
-      };
-
-      EmailModel.sendEmail(fields);
-
-      res.send({
-        message:
-          "New reset password confirmation request was sent to " +
-          req.body.email,
-      });
-    })
-    .catch((err) => res.status(500).send(err));*/
 };
