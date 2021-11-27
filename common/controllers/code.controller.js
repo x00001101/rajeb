@@ -1,4 +1,4 @@
-const Code = require("../models/code.model");
+const { Code } = require("../models/main.model");
 
 let output = {};
 
@@ -6,14 +6,13 @@ exports.createNewCode = (req, res) => {
   const newCode = {
     id: req.body.id,
     name: req.body.name,
-    description: req.body.description
+    description: req.body.description,
   };
-  Code.create(newCode)
-    .then(() => {
-      output.success = true;
-      output.message = "New Code has been saved";
-      res.status(200).send(output);
-    })
+  Code.create(newCode).then(() => {
+    output.success = true;
+    output.message = "New Code has been saved";
+    res.status(200).send(output);
+  });
 };
 
 exports.getAllCodes = (req, res) => {
@@ -24,9 +23,9 @@ exports.getAllCodes = (req, res) => {
   if (req.query.off) {
     limoff.offset = Number(req.query.off);
   }
-  Code.findAll({...limoff})
+  Code.findAll({ ...limoff })
     .then((data) => {
-      res.send(data)
+      res.send(data);
     })
-    .catch(err => res.status(500).send(err));
+    .catch((err) => res.status(500).send(err));
 };

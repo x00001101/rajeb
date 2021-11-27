@@ -1,4 +1,4 @@
-const ServiceModel = require("../../service/models/service.model");
+const { Service } = require("../models/main.model");
 const { Village } = require("../models/region.model");
 
 const output = {};
@@ -22,7 +22,7 @@ async function checkRequirements(requirements, req) {
     }
   });
   return errors;
-};
+}
 
 exports.dataVerification = (title) => {
   return async (req, res, next) => {
@@ -39,7 +39,7 @@ exports.dataVerification = (title) => {
     } else if (title === "verifyDataRequestForPatchingOrders") {
       requirements = ["codeId"];
     } else if (title === "verifyDataRequestForCreatingVoucher") {
-      requirements = ["id","name","type","value","maxValue","expiredDate"];
+      requirements = ["id", "name", "type", "value", "maxValue", "expiredDate"];
     } else if (title === "verifyDataRequestForOrderProcess") {
       requirements = [
         "senderFullName",
@@ -57,7 +57,7 @@ exports.dataVerification = (title) => {
       ];
       //check service if its available
       let serviceId = req.body.serviceId;
-      const service = await ServiceModel.findOne({ where: { id: serviceId } });
+      const service = await Service.findOne({ where: { id: serviceId } });
       if (service === null) {
         return res.status(400).send({ error: "Service Id is not available" });
       }
@@ -71,9 +71,11 @@ exports.dataVerification = (title) => {
       const villageDestination = await Village.findOne({
         where: { id: villageId },
       });
-      if (villageOrigin === null) {
+      if (villageDestination === null) {
         return res.status(400).send({ error: "Destination Id is not found" });
       }
+    } else if (title === "CreateNewPost") {
+      requirements = ["id", "name", "region_id", "type"];
     }
     error_fields = await checkRequirements(requirements, req);
     output.fields = error_fields;
@@ -83,5 +85,5 @@ exports.dataVerification = (title) => {
     } else {
       return next();
     }
-  }
+  };
 };

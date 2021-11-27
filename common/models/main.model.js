@@ -27,8 +27,8 @@ const User = db.define(
       allowNull: false,
     },
     permissionLevel: {
-      type: DataTypes.ENUM("1","5","15","2063","6159"),
-      allowNull: false
+      type: DataTypes.ENUM("1", "5", "15", "2063", "6159"),
+      allowNull: false,
     },
     active: {
       type: DataTypes.BOOLEAN,
@@ -109,10 +109,6 @@ const Order = db.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    serviceId: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
     itemName: DataTypes.STRING,
     itemTypeId: {
       type: DataTypes.STRING,
@@ -168,19 +164,23 @@ const Billing = db.define(
   }
 );
 
-Order.hasOne(Billing, { onDelete: 'cascade' });
+Order.hasOne(Billing, { onDelete: "cascade" });
 Billing.belongsTo(Order);
 
 const Tracking = db.define("Tracking", {
-  codeId: DataTypes.STRING(10),
-  postId: DataTypes.STRING(10),
-  postType: DataTypes.STRING(5),
-  userId: DataTypes.UUID,
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    allowNull: false,
+    autoIncrement: true,
+  },
   description: DataTypes.TEXT,
 });
 
-Order.hasMany(Tracking, { onDelete: 'cascade' });
+Order.hasMany(Tracking, { onDelete: "cascade" });
 Tracking.belongsTo(Order);
+User.hasMany(Tracking);
+Tracking.belongsTo(User);
 
 const Key = db.define(
   "Key",
@@ -220,7 +220,7 @@ const Key = db.define(
       {
         name: "key_generator",
         fields: ["activeKey"],
-      }
+      },
     ],
   }
 );
@@ -228,8 +228,141 @@ const Key = db.define(
 User.hasMany(Key);
 Key.belongsTo(User);
 
+const Voucher = db.define("Voucher", {
+  id: {
+    type: DataTypes.STRING(20),
+    primaryKey: true,
+    allowNull: false,
+  },
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  type: {
+    type: DataTypes.ENUM("PERCENT", "VALUE"),
+    allowNull: false,
+  },
+  value: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: false,
+  },
+  maxValue: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: false,
+    defaultValue: 0,
+  },
+  expiredDate: {
+    type: DataTypes.DATEONLY,
+    allowNull: false,
+  },
+  description: DataTypes.TEXT,
+  total: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    comment: "-1 for unlimited",
+    defaultValue: -1,
+  },
+  limit: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    comment: "-1 for unlimited, limit per user",
+    defaultValue: -1,
+  },
+});
+
+const Pouch = db.define(
+  "Pouch",
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+      allowNull: false,
+    },
+  },
+  {
+    createdAt: false,
+    updatedAt: false,
+  }
+);
+
+Voucher.hasMany(Pouch, { onDelete: "cascade" });
+User.hasMany(Pouch, { onDelete: "cascade" });
+Pouch.belongsTo(Voucher);
+Pouch.belongsTo(User);
+
+const Service = db.define("Service", {
+  id: {
+    type: DataTypes.STRING(10),
+    primaryKey: true,
+    allowNull: false,
+  },
+  name: DataTypes.STRING,
+  setPrice: {
+    type: DataTypes.INTEGER(12),
+    allowNull: false,
+  },
+  description: DataTypes.STRING,
+});
+
+Service.hasMany(Order);
+Order.belongsTo(Service);
+
+const Post = db.define("Post", {
+  id: {
+    type: DataTypes.STRING(10),
+    primaryKey: true,
+    allowNull: false,
+  },
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  regionId: {
+    type: DataTypes.STRING(10),
+    allowNull: false,
+  },
+  type: {
+    type: DataTypes.ENUM("DP", "GT", "TC"),
+    allowNull: false,
+    defaultValue: "DP",
+    comment: "DP-Drop Point, GT-Gateway, TC-Transit Center",
+  },
+});
+
+Post.hasMany(Tracking);
+Tracking.belongsTo(Post);
+
+const Code = db.define(
+  "Code",
+  {
+    id: {
+      type: DataTypes.STRING(10),
+      primaryKey: true,
+      allowNull: false,
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    description: DataTypes.TEXT,
+  },
+  {
+    createdAt: false,
+    updatedAt: false,
+  }
+);
+
+Code.hasMany(Tracking);
+Tracking.belongsTo(Code);
+
 exports.User = User;
 exports.Order = Order;
 exports.Billing = Billing;
 exports.Tracking = Tracking;
 exports.Key = Key;
+exports.Voucher = Voucher;
+exports.Pouch = Pouch;
+exports.Service = Service;
+exports.Post = Post;
+exports.Code = Code;

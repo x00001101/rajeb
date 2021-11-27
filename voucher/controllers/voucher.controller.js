@@ -1,5 +1,5 @@
 const { Op } = require("sequelize");
-const { Voucher, Pouch } = require("../models/voucher.model");
+const { User, Voucher, Pouch } = require("../../common/models/main.model");
 
 let output = {};
 
@@ -9,10 +9,11 @@ exports.createNewVoucher = (req, res) => {
     name: req.body.name,
     type: req.body.type,
     value: req.body.value,
+    maxValue: req.body.maxValue,
     expiredDate: new Date(req.body.expiredDate),
     description: req.body.description,
     total: req.body.total,
-    limit: req.body.limit
+    limit: req.body.limit,
   };
   Voucher.create(newVoucher)
     .then(() => {
@@ -20,21 +21,31 @@ exports.createNewVoucher = (req, res) => {
       output.message = "Voucher created!";
       res.status(201).send(output);
     })
-    .catch(err => res.status(500).send(err));
-}
+    .catch((err) => res.status(500).send(err));
+};
 
 exports.addToPouch = async (req, res) => {
-  const voucherAvailability = await Voucher.findOne({ 
-    where: { 
+  const voucherAvailability = await Voucher.findOne({
+    where: {
       id: req.params.voucherId,
       expiredDate: {
         [Op.gt]: new Date(),
-      }, 
-    }
+      },
+    },
   });
   if (voucherAvailability === null) {
     output.success = false;
-    output.message = "Voucher not found or expired";
+    output.message = "Voucher not found or expired!";
+    return res.status(404).send(output);
+  }
+  const user = await User.findOne({
+    where: {
+      id: req.params.userId,
+    },
+  });
+  if (user === null) {
+    output.success = false;
+    output.message = "User not found!";
     return res.status(404).send(output);
   }
   let totalVouchers = voucherAvailability.total;
@@ -43,30 +54,38 @@ exports.addToPouch = async (req, res) => {
     output.message = "Voucher are not available";
     return res.status(400).send(output);
   }
-  const voucherCount = await Pouch.findAll({ where: { userId: req.params.userId, voucherId: req.params.voucherId }});
-  if (voucherCount.length >= voucherAvailability.limit && voucherAvailability > 0) {
+  const voucherCount = await Pouch.findAll({
+    where: { userId: req.params.userId, voucherId: req.params.voucherId },
+  });
+  if (
+    voucherCount.length >= voucherAvailability.limit &&
+    voucherAvailability.limit > 0
+  ) {
     output.success = false;
     output.message = "User already has the maximum voucher limit";
     return res.status(400).send(output);
   }
-  const user = {
-    userId: req.params.userId
-  };
   try {
-    const voucher = await Voucher.findOne({ where: { id: req.params.voucherId }});
-    const pouch = await Pouch.create(user);
+    const voucher = await Voucher.findOne({
+      where: { id: req.params.voucherId },
+    });
+    const pouch = await Pouch.create();
     pouch.setVoucher(voucher);
+    pouch.setUser(user);
     if (totalVouchers != "-1") {
       totalVouchers = Number(totalVouchers) - 1;
-      Voucher.update({ total: totalVouchers }, { where: { id: req.params.voucherId }});
+      Voucher.update(
+        { total: totalVouchers },
+        { where: { id: req.params.voucherId } }
+      );
     }
     output.success = true;
-    output.message = `${req.params.voucherId} has been added to ${user.userId}`;
+    output.message = `${req.params.voucherId} has been added to ${user.id}`;
     res.send(output);
   } catch (err) {
     res.status(500).send(err);
   }
-}
+};
 
 exports.voucherDetail = (req, res) => {
   if (!req.params) {
@@ -74,13 +93,13 @@ exports.voucherDetail = (req, res) => {
     output.message = "Need parameters!";
     return res.status(404).send(output);
   }
-  Voucher.findOne({where: { id: req.params.voucherId }})
-    .then(data => res.send(data))
-    .catch(err => res.status(500).send(err));
-}
+  Voucher.findOne({ where: { id: req.params.voucherId } })
+    .then((data) => res.send(data))
+    .catch((err) => res.status(500).send(err));
+};
 
 exports.allVouchers = (req, res) => {
   Voucher.findAll()
-    .then(data => res.send(data))
-    .catch(err => res.status(500).send(err));
-}
+    .then((data) => res.send(data))
+    .catch((err) => res.status(500).send(err));
+};

@@ -1,11 +1,17 @@
 // const { Order, Billing, Tracking } = require("../models/order.model");
-const { User, Order, Billing, Tracking } = require("../../common/models/main.model");
+const {
+  User,
+  Order,
+  Billing,
+  Tracking,
+  Voucher,
+  Pouch,
+  Service,
+  Code,
+  Post,
+} = require("../../common/models/main.model");
 const { customAlphabet } = require("nanoid/async");
 const CounterModel = require("../../common/models/counter.model");
-const ServiceModel = require("../../service/models/service.model");
-const { Voucher, Pouch } = require("../../voucher/models/voucher.model");
-const CodeModel = require("../../common/models/code.model");
-const PostModel = require("../../post/models/post.model");
 
 const nanoid = customAlphabet("0123456789", 12);
 
@@ -29,7 +35,7 @@ exports.createNewOrder = (socket) => {
 
     // get service price amount;
     let serviceAmount = 0;
-    const service = await ServiceModel.findOne({
+    const service = await Service.findOne({
       where: { id: req.body.serviceId },
     });
     if (service !== null) {
@@ -55,14 +61,14 @@ exports.createNewOrder = (socket) => {
       if (voucher !== null) {
         if (req.jwt) {
           const pouch = await Pouch.findOne({
-            where: { userId: req.jwt.userId, voucherId: req.body.voucherId }
+            where: { userId: req.jwt.userId, voucherId: req.body.voucherId },
           });
           if (pouch === null) {
             output.success = false;
             output.error = "Not Found!";
             output.field = "Voucher Id";
             output.message = `User does not have the voucher ${req.body.voucherId}`;
-            return res.status(404).send(output);        
+            return res.status(404).send(output);
           }
           pouchId = pouch.id;
           // get voucher type;
@@ -75,11 +81,10 @@ exports.createNewOrder = (socket) => {
           } else if (voucher.type === "VALUE") {
             voucherAmount = voucher.value;
           }
-
         } else {
           output.success = false;
           output.message = "You need to login for using voucher";
-          return res.status(404).send(output);   
+          return res.status(404).send(output);
         }
       } else {
         output.success = false;
@@ -160,7 +165,6 @@ exports.createNewOrder = (socket) => {
       recipientDestinationId: req.body.recipientDestinationId,
       recipientAddress: req.body.recipientAddress,
       recipientPostCode: req.body.recipientPostCode,
-      serviceId: req.body.serviceId,
       itemName: req.body.itemName,
       itemTypeId: req.body.itemTypeId,
       itemWeight: req.body.itemWeight,
@@ -176,7 +180,6 @@ exports.createNewOrder = (socket) => {
       voucherId: req.body.voucherId,
     };
 
-    
     const billingObject = {
       id: billingId,
       voucherAmount: voucherAmount,
@@ -188,21 +191,23 @@ exports.createNewOrder = (socket) => {
 
     try {
       const newOrder = await Order.create(orderObject);
-      
+
+      newOrder.setService(service);
+
       if (userId) {
-        const UserData = await User.findOne({ where: { id: userId }});
+        const UserData = await User.findOne({ where: { id: userId } });
         newOrder.setUser(UserData);
       }
 
       const newBilling = await Billing.create(billingObject);
-      
+
       newBilling.setOrder(newOrder);
 
       if (pouchId) {
-        Pouch.destroy({ 
+        Pouch.destroy({
           where: {
-            id: pouchId
-          }
+            id: pouchId,
+          },
         });
       }
 
@@ -212,48 +217,49 @@ exports.createNewOrder = (socket) => {
       res.send(output);
     } catch (err) {
       console.log(err);
-      res.status(500).send({error: err});
+      res.status(500).send({ error: err });
     }
   };
 };
 
 exports.patchOrder = async (req, res) => {
+  output = {};
+  output.success = false;
   if (!req.params.orderId) {
-    output.success = false;
     output.error = "Need to set Order Id as Parameter";
     return res.status(400).send(output);
   }
-
-  output.success = false;
-  const code = await CodeModel.findOne({ where: { id: req.body.codeId } });
+  const code = await Code.findOne({ where: { id: req.body.codeId } });
   if (code === null) {
     output.error = "Code not found";
     return res.status(404).send(output);
   }
-  if (req.body.postId) {
-    const post = await PostModel.findOne({
-      where: { id: req.body.postId },
-    });
-    if (post === null && req.body.postId !== "") {
-      output.error = "Post not found";
-      return res.status(404).send(output);
-    } else {
-      const postType = post.type;
-    }
+  if (!req.body.postId) {
+    req.body.postId = null;
   }
-
+  const post = await Post.findOne({ where: { id: req.body.postId } });
+  if (post === null && req.body.postId !== null) {
+    output.error = "Post not found!";
+    return res.status(404).send(output);
+  }
+  const user = await User.findOne({ where: { id: req.jwt.userId } });
+  if (user === null) {
+    output.error = "User not found!";
+    return res.status(404).send(output);
+  }
+  const order = await Order.findOne({ where: { id: req.params.orderId } });
+  if (order === null) {
+    output.error = "Order not found!";
+    return res.status(404).send(output);
+  }
   try {
-    const order = await Order.findOne({ where: { id: req.params.orderId } });
-
     const track = await Tracking.create({
-      codeId: req.body.codeId,
-      postId: req.body.postId,
-      postType: postType,
-      userId: req.jwt.userId,
       description: req.body.description,
     });
-
+    track.setCode(code);
     track.setOrder(order);
+    track.setPost(post);
+    track.setUser(user);
     output.success = true;
     res.send(output);
   } catch (err) {
@@ -277,6 +283,22 @@ exports.trackOrder = (req, res) => {
     include: [
       {
         model: Tracking,
+        include: [
+          {
+            model: Code,
+            required: true,
+            attributes: ["name", "description"],
+          },
+          {
+            model: Post,
+            attributes: ["name"],
+          },
+          {
+            model: User,
+            required: true,
+            attributes: ["fullName", "phoneNumber"],
+          },
+        ],
       },
     ],
   })

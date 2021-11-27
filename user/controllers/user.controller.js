@@ -63,32 +63,8 @@ const createNewUser = async (host, newUser, result) => {
 
     result(null, UserData);
   } catch (err) {
-    console.log(err);
     result(err, null);
   }
-
-  /*UserModel.create(newUser)
-    .then((data) => {
-      let expired = new Date();
-      expired.setDate(expired.getDate() + 1);
-      const keyData = {
-        userId: data.id,
-        otp: null,
-        activeKey: newKey,
-        expiredDate: expired,
-        enum: 1,
-      };
-      KeyModel.upsert(keyData, { where: { userId: data.id, enum: 1 } });
-      const fields = {
-        email: data.email,
-        type: "EMAIL_VERIFICATION",
-        url: host + "/emails/verify?verification_token=" + newKey,
-        key: newKey,
-      };
-      EmailModel.sendEmail(fields);
-      result(null, data);
-    })
-    .catch((err) => result(err, null));*/
 };
 
 exports.createUser = (req, res) => {
@@ -317,7 +293,7 @@ exports.changePassword = (req, res) => {
       }
     })
     .catch((err) => {
-      res.status(500).send();
+      res.status(500).send(err);
     });
 };
 
