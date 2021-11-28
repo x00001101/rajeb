@@ -125,7 +125,6 @@ const Order = db.define(
     itemDimension: DataTypes.STRING,
     itemValue: DataTypes.INTEGER,
     insurance: DataTypes.BOOLEAN,
-    voucherId: DataTypes.STRING(50),
   },
   {
     indexes: [
@@ -287,6 +286,8 @@ const Pouch = db.define(
 );
 
 Voucher.hasMany(Pouch, { onDelete: "cascade" });
+Voucher.hasMany(Order);
+Order.belongsTo(Voucher);
 User.hasMany(Pouch, { onDelete: "cascade" });
 Pouch.belongsTo(Voucher);
 Pouch.belongsTo(User);
@@ -356,6 +357,19 @@ const Code = db.define(
 Code.hasMany(Tracking);
 Tracking.belongsTo(Code);
 
+const Wallet = db.define("Wallet", {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+    allowNull: false,
+  },
+  balance: DataTypes.DECIMAL(10, 2),
+});
+
+User.hasOne(Wallet);
+Wallet.belongsTo(User);
+
 exports.User = User;
 exports.Order = Order;
 exports.Billing = Billing;
@@ -366,3 +380,4 @@ exports.Pouch = Pouch;
 exports.Service = Service;
 exports.Post = Post;
 exports.Code = Code;
+exports.Wallet = Wallet;

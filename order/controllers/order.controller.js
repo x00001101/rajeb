@@ -52,12 +52,12 @@ exports.createNewOrder = (socket) => {
     let voucherAmount = 0;
     let pouchId = null;
     // get voucher amount from voucher id using model
+
+    const voucher = await Voucher.findOne({
+      where: { id: req.body.voucherId },
+    });
     if (req.body.voucherId || req.body.voucherId != "") {
       // check if the user has the voucher
-
-      const voucher = await Voucher.findOne({
-        where: { id: req.body.voucherId },
-      });
       if (voucher !== null) {
         if (req.jwt) {
           const pouch = await Pouch.findOne({
@@ -209,6 +209,10 @@ exports.createNewOrder = (socket) => {
             id: pouchId,
           },
         });
+      }
+
+      if (req.body.voucherId || req.body.voucherId != "") {
+        newOrder.setVoucher(voucher);
       }
 
       output.success = true;
