@@ -1,0 +1,219 @@
+{
+    "info": {
+        "_postman_id": "304f066f-f6ae-4a33-b1f0-912af875bae5",
+        "name": "REST API JEB Documentation",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "User",
+            "item": [
+                {
+                    "name": "Create new User: To create a new user",
+                    "id": "853b8717-36a9-4a51-9b69-a97395c60a88",
+                    "protocolProfileBehavior": {
+                        "disableBodyPruning": true
+                    },
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\r\n    \"fullName\": \"Masandy Hariyanto\",\r\n    \"phoneNumber\": \"081334559783\",\r\n    \"email\": \"masmaeandy@gmail.com\",\r\n    \"password\": \"thisisapassword\",\r\n    \"permissionLevel\": \"5\"\r\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/users",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users"
+                            ]
+                        }
+                    },
+                    "response": [
+                        {
+                            "id": "1e765f1d-1036-4194-a1a7-5e8c639da682",
+                            "name": "Response: New user succesfully created",
+                            "originalRequest": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "name": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\r\n    \"fullName\": \"Masandy Hariyanto\",\r\n    \"phoneNumber\": \"081334559783\",\r\n    \"email\": \"masmasandy@gmail.com\",\r\n    \"password\": \"thisisapassword\",\r\n    \"permissionLevel\": \"5\"\r\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/user",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "user"
+                                    ]
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "disabled": false,
+                                    "description": "A link to the next page of responses",
+                                    "key": "x-next",
+                                    "value": "voluptate elit"
+                                },
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "cookie": [],
+                            "responseTime": null,
+                            "body": "{\n    \"success\": true,\n    \"messages\": [\n        \"New account created successfully!\",\n        \"Activation e-mail has been sent!, check your inbox / spam folder\"\n    ],\n    \"output\": {\n        \"id\": \"bd62a752-1761-42d3-9c18-d4abeadb8421\",\n        \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJiZDYyYTc1Mi0xNzYxLTQyZDMtOWMxOC1kNGFiZWFkYjg0MjEiLCJlbWFpbCI6Im1hc21hc2FuZHlAZ21haWwuY29tIiwicGVybWlzc2lvbl9sZXZlbCI6IjUiLCJhY3RpdmUiOmZhbHNlLCJwcm92aWRlciI6Ik5ldyBBY2NvdW50IiwibmFtZSI6Ik1hc2FuZHkgSGFyaXlhbnRvIiwicGhvbmVfbnVtYmVyIjoiMDgxMzM0NTU5NzgzIiwiaWF0IjoxNjM4MDkzMjM2fQ.X22E43KsOC2UqdiRAaCvpPpmUXVptYkBTJo0Z2TmXzA\",\n        \"refreshToken\": \"ZXBpVVlpOWFwZDZ5L3BFUnI0QXhvRFRjdDRvblFrMHR1Y3NkTGhrTVRLeHV2ZjFacEdCKytBYWIvalFKVUNwaUs2Z1N0N2dZS2o3MFNVU25GSTVWSmc9PQ==\"\n    }\n}"
+                        },
+                        {
+                            "id": "84c2138f-17f0-4174-b400-21f415925a47",
+                            "name": "Registered e-mail",
+                            "originalRequest": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "name": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\r\n    \"fullName\": \"Masandy Hariyanto\",\r\n    \"phoneNumber\": \"081334559783\",\r\n    \"email\": \"masmasandy@gmail.com\",\r\n    \"password\": \"thisisapassword\",\r\n    \"permissionLevel\": \"5\"\r\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/user",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "user"
+                                    ]
+                                }
+                            },
+                            "status": "Bad Request",
+                            "code": 400,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "cookie": [],
+                            "responseTime": null,
+                            "body": "{\n    \"success\": false,\n    \"output\": null,\n    \"message\": \"Registered e-mail!\"\n}"
+                        },
+                        {
+                            "id": "cad310a1-612e-451b-8d63-93d7f198e374",
+                            "name": "Registered phone number",
+                            "originalRequest": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "name": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\r\n    \"fullName\": \"Masandy Hariyanto\",\r\n    \"phoneNumber\": \"081334559783\",\r\n    \"email\": \"masmasandy@gmail.com\",\r\n    \"password\": \"thisisapassword\",\r\n    \"permissionLevel\": \"5\"\r\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/user",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "user"
+                                    ]
+                                }
+                            },
+                            "status": "Bad Request",
+                            "code": 400,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "cookie": [],
+                            "responseTime": null,
+                            "body": "{\n    \"success\": false,\n    \"output\": null,\n    \"message\": \"Registered phone number!\"\n}"
+                        }
+                    ]
+                }
+            ],
+            "id": "7b84fad1-3521-4cb5-add0-05aaf94bd124"
+        }
+    ],
+    "auth": {
+        "type": "bearer"
+    },
+    "event": [
+        {
+            "listen": "prerequest",
+            "script": {
+                "id": "9a91b163-7b87-4b1d-ac3f-3ebb3b907db4",
+                "type": "text/javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        },
+        {
+            "listen": "test",
+            "script": {
+                "id": "c1848238-ea55-4d18-97db-f906f954b44c",
+                "type": "text/javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        }
+    ],
+    "variable": [
+        {
+            "id": "904d562a-1ea0-41e2-8d8c-3469b9471b4a",
+            "key": "baseUrl",
+            "value": "localhost:3600"
+        }
+    ]
+}
