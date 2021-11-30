@@ -17,6 +17,7 @@ const CommonRoutes = require("./common/routes");
 const PostRoutes = require("./post/routes");
 const ServiceRoutes = require("./service/routes");
 const VoucherRoutes = require("./voucher/routes");
+const PackingRoutes = require("./packing/routes");
 
 // get server IP
 const { networkInterfaces } = require("os");
@@ -88,3 +89,4 @@ CommonRoutes.routesConfig(app);
 PostRoutes.routesConfig(app);
 ServiceRoutes.routesConfig(app);
 VoucherRoutes.routesConfig(app);
+PackingRoutes.routesConfig(app);

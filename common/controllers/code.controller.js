@@ -8,10 +8,10 @@ exports.createNewCode = (req, res) => {
     name: req.body.name,
     description: req.body.description,
   };
-  Code.create(newCode).then(() => {
+  Code.create(newCode).then((data) => {
     output.success = true;
     output.message = "New Code has been saved";
-    res.status(200).send(output);
+    res.status(200).send({ ...output, ...data.dataValues });
   });
 };
 

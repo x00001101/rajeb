@@ -265,7 +265,13 @@ exports.patchOrder = async (req, res) => {
     track.setPost(post);
     track.setUser(user);
     output.success = true;
-    res.send(output);
+    res.send({
+      ...output,
+      code: { ...code.dataValues },
+      order: { ...order.dataValues },
+      post: { ...post.dataValues },
+      userId: user.dataValues.id,
+    });
   } catch (err) {
     res.status(500).send(err);
   }

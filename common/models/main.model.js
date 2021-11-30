@@ -370,6 +370,44 @@ const Wallet = db.define("Wallet", {
 User.hasOne(Wallet);
 Wallet.belongsTo(User);
 
+const Packing = db.define("Packing", {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+    allowNull: false,
+  },
+  total: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+  },
+  locked: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
+});
+
+const PackingList = db.define(
+  "PackingList",
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+  },
+  {
+    createdAt: false,
+    updatedAt: false,
+  }
+);
+Packing.belongsTo(Post, { as: "fromPost" });
+Packing.belongsTo(Post, { as: "toPost" });
+Packing.hasMany(PackingList);
+PackingList.belongsTo(Packing);
+Order.hasOne(PackingList);
+PackingList.belongsTo(Order);
+
 exports.User = User;
 exports.Order = Order;
 exports.Billing = Billing;
@@ -381,3 +419,5 @@ exports.Service = Service;
 exports.Post = Post;
 exports.Code = Code;
 exports.Wallet = Wallet;
+exports.Packing = Packing;
+exports.PackingList = PackingList;

@@ -36,10 +36,10 @@ exports.createNewService = (req, res) => {
     description: req.body.description,
   };
   Service.create(newService)
-    .then(() => {
+    .then((data) => {
       output.success = true;
       output.message = "New service created!";
-      res.status(201).send(output);
+      res.status(201).send({ ...output, ...data.dataValues });
     })
     .catch((err) => res.status(400).send(err));
 };
