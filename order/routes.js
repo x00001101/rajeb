@@ -16,7 +16,9 @@ exports.routesConfig = (app, socket) => {
   //create new order
   app.post("/orders", [
     ValidationMiddleware.validJWTNeededOrNext,
-    DataValidatorMiddleware.dataVerification("verifyDataRequestForOrderProcess"),
+    DataValidatorMiddleware.dataVerification(
+      "verifyDataRequestForOrderProcess"
+    ),
     OrderController.createNewOrder(socket),
   ]);
 
@@ -25,9 +27,21 @@ exports.routesConfig = (app, socket) => {
     PermissionMiddleware.onlyAdminAndPermitedPermissionLevelRequired(
       PERMITED_COURIER
     ),
-    DataValidatorMiddleware.dataVerification("verifyDataRequestForPatchingOrders"),
+    DataValidatorMiddleware.dataVerification(
+      "verifyDataRequestForPatchingOrders"
+    ),
     OrderController.patchOrder,
   ]);
 
+  app.get("/orders/:orderId/tracks", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.onlyAdminAndPermitedPermissionLevelRequired(
+      PERMITED_COURIER
+    ),
+    OrderController.courierTracksOrder(ADMIN),
+  ]);
+
   app.get("/tracking", [OrderController.trackOrder]);
+
+  app.delete("/orders/:orderId", [OrderController.deleteOrder]);
 };

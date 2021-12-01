@@ -12,6 +12,7 @@ const {
 } = require("../../common/models/main.model");
 const { customAlphabet } = require("nanoid/async");
 const CounterModel = require("../../common/models/counter.model");
+const { Village } = require("../../common/models/region.model");
 
 const nanoid = customAlphabet("0123456789", 12);
 
@@ -29,6 +30,19 @@ exports.createNewOrder = (socket) => {
     if (socket) {
       // here for notification
     }
+    const origin = await Village.findOne({
+      where: { id: req.body.senderOriginId },
+    });
+    if (origin === null) {
+      return res.status(404).send({ error: "origin Id not found!" });
+    }
+    const destination = await Village.findOne({
+      where: { id: req.body.recipientDestinationId },
+    });
+    if (destination === null) {
+      return res.status(404).send({ error: "origin Id not found!" });
+    }
+
     const serviceId = req.body.serviceId;
 
     // this is billing
@@ -157,12 +171,10 @@ exports.createNewOrder = (socket) => {
       senderId: userId,
       senderFullName: req.body.senderFullName,
       senderPhoneNumber: req.body.senderPhoneNumber,
-      senderOriginId: req.body.senderOriginId,
       senderAddress: req.body.senderAddress,
       senderPostCode: req.body.senderPostCode,
       recipientFullName: req.body.recipientFullName,
       recipientPhoneNumber: req.body.recipientPhoneNumber,
-      recipientDestinationId: req.body.recipientDestinationId,
       recipientAddress: req.body.recipientAddress,
       recipientPostCode: req.body.recipientPostCode,
       itemName: req.body.itemName,
@@ -193,6 +205,8 @@ exports.createNewOrder = (socket) => {
       const newOrder = await Order.create(orderObject);
 
       newOrder.setService(service);
+      newOrder.setOrigin(origin);
+      newOrder.setDestination(destination);
 
       if (userId) {
         const UserData = await User.findOne({ where: { id: userId } });
@@ -292,6 +306,14 @@ exports.trackOrder = (req, res) => {
     },
     include: [
       {
+        model: Village,
+        as: "origin",
+      },
+      {
+        model: Village,
+        as: "destination",
+      },
+      {
         model: Tracking,
         include: [
           {
@@ -314,4 +336,45 @@ exports.trackOrder = (req, res) => {
   })
     .then((data) => res.send(data))
     .catch((err) => res.status(500).send(err));
+};
+
+exports.courierTracksOrder = (permited) => {
+  return (req, res) => {
+    Tracking.findOne({
+      where: { orderId: req.params.orderId },
+      include: [
+        {
+          model: User,
+          attributes: ["id", "fullName", "phoneNumber", "permissionLevel"],
+        },
+      ],
+    })
+      .then((data) => {
+        if (
+          req.jwt.userId !== data.User.id &&
+          req.jwt.permissionLevel & permited
+        ) {
+          return res.status(401).send();
+        }
+        res.send(data);
+      })
+      .catch((err) => {
+        res.status(500).send(err);
+      });
+  };
+};
+
+exports.deleteOrder = async (req, res) => {
+  // check if order is got tracked
+  const tracking = await Tracking.findOne({
+    where: { orderId: req.params.orderId },
+  });
+  if (tracking === null) {
+    Order.destroy({ where: { id: req.params.orderId } });
+    return res.send({ message: `${req.params.orderId} has been deleted!` });
+  } else {
+    return res
+      .status(403)
+      .send({ error: `This order ${req.params.orderId} can not be deleted!` });
+  }
 };

@@ -1,5 +1,6 @@
 const db = require("../config/database");
 const { DataTypes } = require("sequelize");
+const { Village, District } = require("./region.model");
 
 const User = db.define(
   "User",
@@ -77,10 +78,6 @@ const Order = db.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    senderOriginId: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
     senderAddress: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -94,10 +91,6 @@ const Order = db.define(
       allowNull: false,
     },
     recipientPhoneNumber: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    recipientDestinationId: {
       type: DataTypes.STRING,
       allowNull: false,
     },
@@ -138,6 +131,8 @@ const Order = db.define(
 
 User.hasMany(Order);
 Order.belongsTo(User);
+Order.belongsTo(Village, { as: "origin" });
+Order.belongsTo(Village, { as: "destination" });
 
 const Billing = db.define(
   "Billing",
@@ -319,10 +314,6 @@ const Post = db.define("Post", {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  regionId: {
-    type: DataTypes.STRING(10),
-    allowNull: false,
-  },
   type: {
     type: DataTypes.ENUM("DP", "GT", "TC"),
     allowNull: false,
@@ -331,6 +322,7 @@ const Post = db.define("Post", {
   },
 });
 
+Post.belongsTo(District, { as: "region" });
 Post.hasMany(Tracking);
 Tracking.belongsTo(Post);
 
