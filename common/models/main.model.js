@@ -400,6 +400,22 @@ PackingList.belongsTo(Packing);
 Order.hasOne(PackingList);
 PackingList.belongsTo(Order);
 
+const Room = db.define(
+  "Room",
+  {
+    id: {
+      type: DataTypes.STRING(40),
+      primaryKey: true,
+    },
+  },
+  {
+    createdAt: false,
+    updatedAt: false,
+  }
+);
+User.hasOne(Room);
+Room.belongsTo(User);
+
 exports.User = User;
 exports.Order = Order;
 exports.Billing = Billing;
@@ -413,3 +429,4 @@ exports.Code = Code;
 exports.Wallet = Wallet;
 exports.Packing = Packing;
 exports.PackingList = PackingList;
+exports.Room = Room;

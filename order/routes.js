@@ -1,4 +1,5 @@
 const OrderController = require("./controllers/order.controller");
+const OrderMiddleware = require("./middlewares/order.middleware");
 const DataValidatorMiddleware = require("../common/middlewares/verify.data.middleware");
 const ValidationMiddleware = require("../auth/middlewares/auth.validation.middleware");
 const PermissionMiddleware = require("../auth/middlewares/auth.permission.middleware");
@@ -19,7 +20,13 @@ exports.routesConfig = (app, socket) => {
     DataValidatorMiddleware.dataVerification(
       "verifyDataRequestForOrderProcess"
     ),
+    OrderMiddleware.postChecking,
     OrderController.createNewOrder(socket),
+  ]);
+
+  // middleware post checking
+  app.post("/orders/mid/pc", [
+    OrderMiddleware.postChecking
   ]);
 
   app.patch("/orders/:orderId", [

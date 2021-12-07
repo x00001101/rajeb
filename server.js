@@ -3,6 +3,7 @@ const express = require("express");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 const bodyParser = require("body-parser");
+const { User, Room } = require("./common/models/main.model");
 
 const app = express();
 const httpServer = createServer(app);
@@ -39,7 +40,8 @@ for (const name of Object.keys(nets)) {
 
 const PORT = process.env.PORT || 3000;
 httpServer.listen(PORT, () => {
-  console.log("App is listening at http://" + results["eth0"][0] + ":" + PORT);
+  // console.log("App is listening at http://" + results["eth0"][0] + ":" + PORT);
+  console.log("App is listening at http://localhost:" + PORT);
 });
 
 const io = new Server(httpServer, {
@@ -76,6 +78,19 @@ let socketServer;
 
 io.on("connection", (socket) => {
   console.log("Made socket connection with id: " + socket.id);
+  socket.on("createConnection", async (userId) => {
+    // save this userId to database
+    const user = await User.findOne({ where: { id: userId }});
+    try {
+      const room = await Room.create({ id: socket.id });
+      room.setUser(user);
+    } catch (err) {
+      console.log(err);
+    }
+  });
+  socket.on("disconnect", () => {
+    Room.destroy({ where: { id: socket.id }});
+  })
   socketServer = socket;
 });
 
