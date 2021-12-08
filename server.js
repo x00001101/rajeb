@@ -77,7 +77,6 @@ app.use(
 let socketServer;
 
 io.on("connection", (socket) => {
-  console.log("Made socket connection with id: " + socket.id);
   socket.on("createConnection", async (userId) => {
     // save this userId to database
     const user = await User.findOne({ where: { id: userId }});
@@ -99,7 +98,7 @@ UserRoutes.routesConfig(app);
 EmailRoutes.routesConfig(app);
 CourierRoutes.routesConfig(app, socketServer);
 CustomerRoutes.routesConfig(app, socketServer);
-OrderRoutes.routesConfig(app, socketServer);
+OrderRoutes.routesConfig(app, socketServer, io);
 CommonRoutes.routesConfig(app);
 PostRoutes.routesConfig(app);
 ServiceRoutes.routesConfig(app);

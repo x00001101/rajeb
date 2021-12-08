@@ -27,9 +27,6 @@ const generateBillingId = async () => {
 exports.createNewOrder = (socket) => {
   return async (req, res) => {
     output = {};
-    if (socket) {
-      // here for notification
-    }
     const origin = await Village.findOne({
       where: { id: req.body.senderOriginId },
     });
@@ -229,6 +226,10 @@ exports.createNewOrder = (socket) => {
         newOrder.setVoucher(voucher);
       }
 
+      if (socket) {
+        // here for notification
+      }
+      
       output.success = true;
       output.awbNumber = awbNumber;
       output.billingId = billingId;
