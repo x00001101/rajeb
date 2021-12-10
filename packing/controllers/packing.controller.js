@@ -1,4 +1,6 @@
 const {
+  User,
+  Code,
   Order,
   Packing,
   PackingList,
@@ -111,6 +113,31 @@ exports.lockPacking = async (req, res) => {
     { locked: true },
     { where: { id: req.params.packingId } }
   );
+  console.log(packing);
+  // add tracking code send to destination
+  await PackingList.findAll({
+    where: { PackingId: req.params.packingId },
+  })
+    .then( async (data) => {
+      const packingHeader = await Packing.findOne({ where: { id: req.params.packingId }});
+      const user = await User.findOne({ where: { id: req.jwt.userId }});
+      const post = await Post.findOne({ where: { id: packingHeader.fromPostId }});
+      const code = await Code.findOne({ where: { id: req.body.codeId }});
+      for await (const list of data) {
+        const order = await Order.findOne({ where: { id: list.OrderId }});
+        try {
+          const track = await Tracking.create({
+            description: req.body.description,
+          });
+          track.setCode(code);
+          track.setOrder(order);
+          track.setPost(post);
+          track.setUser(user);
+        } catch (err) {
+          console.log(err);
+        }
+      }
+    });
   res.send(packing);
 };
 
@@ -129,4 +156,38 @@ exports.removeOrderFromPacking = async (req, res) => {
       return req.status(403).send({ error: "Packing is locked" });
     }
   }
+  const order = await Order.findOne({ where: {id: req.params.orderId }});
+  if (order === null) {
+    return req.status(404).send({ error: "Order ID not found!"});
+  }
+  const orderInPacking = await PackingList.findOne({
+    where: {
+      PackingId: req.params.packingId,
+      OrderId: req.params.orderId,
+    },
+  });
+  if (order === null) {
+    return req.status(404).send({ error: "Order ID not found in this Packing ID!"});
+  }
+  const removeOrder = await PackingList.destroy({
+    where: {
+      PackingId: req.params.packingId,
+      OrderId: req.params.orderId,
+    },
+  });
+  req.send(removeOrder);
 };
+
+exports.unlockPacking = async (req, res) => {
+  if (!req.params.packingId) {
+    return res.status(403).send({ error: "Need packing id!" });
+  }
+};
+
+exports.getPackingList = async (req, res) => {
+  if (!req.params.packingId) {
+    return res.status(403).send({ error: "Need packing id!" });
+  }
+  const packinglist = await PackingList.findAll({ where: { PackingId: req.params.packingId }});
+  res.send(packinglist);
+}

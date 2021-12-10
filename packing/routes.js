@@ -39,4 +39,11 @@ exports.routesConfig = (app) => {
     PermissionMiddleware.minimumPermissionLevelRequired(COURIER),
     PackingController.removeOrderFromPacking,
   ]);
+
+  // get packing list 
+  app.get("/packinglist/:packingId", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.minimumPermissionLevelRequired(COURIER),
+    PackingController.getPackingList,
+  ]);
 };

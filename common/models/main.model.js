@@ -387,6 +387,10 @@ const PackingList = db.define(
       primaryKey: true,
       autoIncrement: true,
     },
+    checked: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
   },
   {
     createdAt: false,
