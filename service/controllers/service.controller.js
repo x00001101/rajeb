@@ -1,32 +1,6 @@
-const { Service } = require("../../common/models/main.model");
-const ConverterModel = require("../../common/models/converter.model");
+const { Service, prices } = require("../../common/models/main.model");
 
-const output = {};
-
-const prices = async (serviceId, weight, height, width, long) => {
-  const output = {};
-  output.serviceId = serviceId;
-  output.weight = weight;
-  output.height = height;
-  output.long = long;
-  let service = await Service.findOne({ where: { id: serviceId } });
-  if (height != 0 && width != 0 && long != 0) {
-    const converterValue = await ConverterModel.findOne();
-    if (converterValue === null) {
-      output.error = "Converter value not set!";
-      return output;
-    }
-    const weightTotal = (height * width * long) / converterValue.value;
-    if (Math.round(weightTotal) > Math.round(weight)) {
-      output.price = Math.round(weightTotal) * service.setPrice;
-    } else {
-      output.price = Math.round(weight) * service.setPrice;
-    }
-    return output;
-  }
-  output.price = Math.round(weight) * service.setPrice;
-  return output;
-};
+let output = {};
 
 exports.createNewService = (req, res) => {
   const newService = {
@@ -51,12 +25,24 @@ exports.getAllServicesData = (req, res) => {
 };
 
 exports.getPrice = async (req, res) => {
-  let weight = req.body.item_weight;
-  let height = req.body.item_height;
-  let width = req.body.item_width;
-  let long = req.body.item_long;
-  let serviceId = req.params.serviceId;
+  const weight = req.query.item_weight;
+  const height = req.query.item_height;
+  const width = req.query.item_width;
+  const long = req.query.item_long;
+  const origin = req.query.origin;
+  const destination = req.query.destination;
 
-  const data = await prices(serviceId, weight, height, width, long);
+  const serviceId = req.params.serviceId;
+  const service = await Service.findOne({ where: { id: serviceId } });
+
+  const data = await prices(
+    service.setPrice,
+    weight,
+    height,
+    width,
+    long,
+    origin,
+    destination
+  );
   res.send(data);
 };

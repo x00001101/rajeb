@@ -1,4 +1,4 @@
-const { Code } = require("../models/main.model");
+const { Code, Type } = require("../models/main.model");
 
 let output = {};
 
@@ -27,5 +27,34 @@ exports.getAllCodes = (req, res) => {
     .then((data) => {
       res.send(data);
     })
+    .catch((err) => res.status(500).send(err));
+};
+
+exports.createNewTypeCode = (req, res) => {
+  output.success = false;
+  if (req.body.constructor === Object && Object.keys(req.body).length === 0) {
+    output.message = "Need body data to pass!";
+    return res.status(400).send(output);
+  }
+  Type.create({ id: req.body.id, description: req.body.description })
+    .then((data) => {
+      output.success = true;
+      res.send({
+        ...output,
+        ...data,
+      });
+    })
+    .catch((err) => res.status(500).send(err));
+};
+
+exports.getAllTypes = (req, res) => {
+  Type.findAll()
+    .then((data) => res.send(data))
+    .catch((err) => res.status(500).send(err));
+};
+
+exports.deleteType = (req, res) => {
+  Type.destroy({ where: { id: req.params.typeId } })
+    .then(() => res.send())
     .catch((err) => res.status(500).send(err));
 };

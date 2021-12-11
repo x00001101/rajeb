@@ -25,9 +25,7 @@ exports.routesConfig = (app, socket) => {
   ]);
 
   // middleware post checking
-  app.post("/orders/mid/pc", [
-    OrderMiddleware.postChecking
-  ]);
+  app.post("/orders/mid/pc", [OrderMiddleware.postChecking]);
 
   app.patch("/orders/:orderId", [
     ValidationMiddleware.validJWTNeeded,
@@ -37,6 +35,7 @@ exports.routesConfig = (app, socket) => {
     DataValidatorMiddleware.dataVerification(
       "verifyDataRequestForPatchingOrders"
     ),
+    OrderMiddleware.checkIfOrderHasAlreadyHadSameTrackingCode,
     OrderController.patchOrder,
   ]);
 

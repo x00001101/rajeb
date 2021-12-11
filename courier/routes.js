@@ -20,4 +20,12 @@ exports.routesConfig = (app, socket) => {
     ),
     CourierController.courierPage(socket),
   ]);
+
+  app.get("/courier/history", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.onlyAdminAndPermitedPermissionLevelRequired(
+      PERMITED_COURIER
+    ),
+    CourierController.courierHistory,
+  ]);
 };

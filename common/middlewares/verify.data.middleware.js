@@ -31,9 +31,11 @@ exports.dataVerification = (title) => {
       return res.status(400).send(output);
     }
     if (title === "verifyDataRequestForCreatingNewConverter") {
-      requirements = ["converterValue"];
+      requirements = ["converter", "courierPercentage", "ootPercentage"];
     } else if (title === "verifyDataRequestForGetPrice") {
       requirements = ["item_weight"];
+    } else if (title === "verifyDataRequestForPackingLock") {
+      requirements = ["codeId"];
     } else if (title === "verifyDataRequestForCreatingNewService") {
       requirements = ["name"];
     } else if (title === "verifyDataRequestForPatchingOrders") {

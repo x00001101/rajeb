@@ -1,6 +1,7 @@
 const db = require("../config/database");
 const { DataTypes } = require("sequelize");
 const { Village, District } = require("./region.model");
+const SettingModel = require("./setting.model");
 
 const User = db.define(
   "User",
@@ -62,6 +63,22 @@ const User = db.define(
   }
 );
 
+const Type = db.define(
+  "Type",
+  {
+    id: {
+      type: DataTypes.STRING(20),
+      allowNull: false,
+      primaryKey: true,
+    },
+    description: DataTypes.STRING,
+  },
+  {
+    createdAt: false,
+    updatedAt: false,
+  }
+);
+
 const Order = db.define(
   "Order",
   {
@@ -103,10 +120,6 @@ const Order = db.define(
       allowNull: false,
     },
     itemName: DataTypes.STRING,
-    itemTypeId: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
     itemQty: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
@@ -118,6 +131,11 @@ const Order = db.define(
     itemDimension: DataTypes.STRING,
     itemValue: DataTypes.INTEGER,
     insurance: DataTypes.BOOLEAN,
+    finished: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
   },
   {
     indexes: [
@@ -130,9 +148,11 @@ const Order = db.define(
 );
 
 User.hasMany(Order);
+Type.hasMany(Order);
 Order.belongsTo(User);
 Order.belongsTo(Village, { as: "origin" });
 Order.belongsTo(Village, { as: "destination" });
+Order.belongsTo(Type);
 
 const Billing = db.define(
   "Billing",
@@ -169,6 +189,10 @@ const Tracking = db.define("Tracking", {
     autoIncrement: true,
   },
   description: DataTypes.TEXT,
+  packing: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
 });
 
 Order.hasMany(Tracking, { onDelete: "cascade" });
@@ -373,9 +397,9 @@ const Packing = db.define("Packing", {
     type: DataTypes.INTEGER,
     defaultValue: 0,
   },
-  locked: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false,
+  status: {
+    type: DataTypes.ENUM("UNLOCKED", "LOCKED", "DONE"),
+    defaultValue: "UNLOCKED",
   },
 });
 
@@ -420,6 +444,46 @@ const Room = db.define(
 User.hasOne(Room);
 Room.belongsTo(User);
 
+const prices = async (
+  servicePrice,
+  weight,
+  height,
+  width,
+  long,
+  origin,
+  destination
+) => {
+  let out = {};
+  out.weight = weight;
+  out.height = height;
+  out.long = long;
+  // set the price according to the distance
+
+  const settings = await SettingModel.findOne({ where: { id: "SETTING" } });
+  if (settings === null) {
+    out.error = "Setting not set!";
+    return out;
+  }
+  const ootPercentage = settings.ootPercentage; //oot percentage = out of town
+
+  if (
+    origin.substring(0, 4) !== destination.substring(0, 4) // if regency id is not the same so it is out of town
+  ) {
+    servicePrice = (Number(servicePrice) * Number(ootPercentage)) / 100;
+  }
+  if (height != 0 && width != 0 && long != 0) {
+    const weightTotal = (height * width * long) / settings.converter;
+    if (Math.round(weightTotal) > Math.round(weight)) {
+      out.price = Math.round(weightTotal) * servicePrice;
+    } else {
+      out.price = Math.round(weight) * servicePrice;
+    }
+    return out;
+  }
+  out.price = Math.round(weight) * servicePrice;
+  return out;
+};
+
 exports.User = User;
 exports.Order = Order;
 exports.Billing = Billing;
@@ -434,3 +498,5 @@ exports.Wallet = Wallet;
 exports.Packing = Packing;
 exports.PackingList = PackingList;
 exports.Room = Room;
+exports.Type = Type;
+exports.prices = prices;

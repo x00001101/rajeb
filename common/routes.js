@@ -1,5 +1,5 @@
 const RegionController = require("./controllers/region.controller");
-const ConverterController = require("./controllers/converter.controller");
+const SettingController = require("./controllers/setting.controller");
 const CodeController = require("./controllers/code.controller");
 const PermissionMiddleware = require("../auth/middlewares/auth.permission.middleware");
 const ValidationMiddleware = require("../auth/middlewares/auth.validation.middleware");
@@ -11,33 +11,56 @@ const COURIER = process.env.COURIER;
 
 exports.routesConfig = (app) => {
   app.get("/", (req, res) => {
-    res.send({message: "You are currently accessing the Rest API for the JEB expedition system for more detailed information please visit https://x00001101.github.io/rajeb-docs"})
+    res.send({
+      message:
+        "You are currently accessing the Rest API for the JEB expedition system for more detailed information please visit https://x00001101.github.io/rajeb-docs",
+    });
   });
-  
+
   app.get("/regions", [RegionController.getRegion]);
 
-  app.post("/converters", [
+  app.post("/settings", [
     ValidationMiddleware.validJWTNeeded,
     PermissionMiddleware.minimumPermissionLevelRequired(SUPER_USER),
-    DataValidatorMiddleware.dataVerification("verifyDataRequestForCreatingNewConverter"),
-    ConverterController.setNewConverter,
+    DataValidatorMiddleware.dataVerification(
+      "verifyDataRequestForCreatingNewConverter"
+    ),
+    SettingController.setNewSetting,
   ]);
 
-  app.get("/converters", [
+  app.get("/settings", [
     ValidationMiddleware.validJWTNeeded,
     PermissionMiddleware.minimumPermissionLevelRequired(SUPER_USER),
-    ConverterController.getAllConverter,
+    SettingController.getAllSetting,
   ]);
 
   app.post("/codes", [
     ValidationMiddleware.validJWTNeeded,
     PermissionMiddleware.minimumPermissionLevelRequired(ADMIN),
-    CodeController.createNewCode
+    CodeController.createNewCode,
   ]);
 
   app.get("/codes", [
     ValidationMiddleware.validJWTNeeded,
     PermissionMiddleware.minimumPermissionLevelRequired(COURIER),
-    CodeController.getAllCodes
+    CodeController.getAllCodes,
+  ]);
+
+  app.post("/types", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.minimumPermissionLevelRequired(ADMIN),
+    CodeController.createNewTypeCode,
+  ]);
+
+  app.delete("/types/:typeId", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.minimumPermissionLevelRequired(ADMIN),
+    CodeController.deleteType,
+  ]);
+
+  app.post("/types", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.minimumPermissionLevelRequired(ADMIN),
+    CodeController.getAllTypes,
   ]);
 };

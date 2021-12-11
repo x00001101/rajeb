@@ -9,14 +9,16 @@ exports.routesConfig = (app) => {
   app.post("/services", [
     ValidationMiddleware.validJWTNeeded,
     PermissionMiddleware.minimumPermissionLevelRequired(SUPER_USER),
-    DataValidatorMiddleware.dataVerification("verifyDataRequestForCreatingNewService"),
+    DataValidatorMiddleware.dataVerification(
+      "verifyDataRequestForCreatingNewService"
+    ),
     ServiceController.createNewService,
   ]);
 
   app.get("/services", [ServiceController.getAllServicesData]);
 
   app.get("/prices/:serviceId", [
-    DataValidatorMiddleware.dataVerification("verifyDataRequestForGetPrice"),
+    // DataValidatorMiddleware.dataVerification("verifyDataRequestForGetPrice"),
     ServiceController.getPrice,
   ]);
 };

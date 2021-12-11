@@ -1,6 +1,8 @@
 const PackingController = require("./controllers/packing.controller");
+const PackingMiddleware = require("./middlewares/packing.middleware");
 const PermissionMiddleware = require("../auth/middlewares/auth.permission.middleware");
 const ValidationMiddleware = require("../auth/middlewares/auth.validation.middleware");
+const VerifyDataMiddleware = require("../common/middlewares/verify.data.middleware");
 
 const ADMIN = process.env.ADMIN;
 const COURIER = process.env.COURIER;
@@ -30,6 +32,7 @@ exports.routesConfig = (app) => {
   app.patch("/packings/:packingId/lock", [
     ValidationMiddleware.validJWTNeeded,
     PermissionMiddleware.minimumPermissionLevelRequired(COURIER),
+    VerifyDataMiddleware.dataVerification("verifyDataRequestForPackingLock"),
     PackingController.lockPacking,
   ]);
 
@@ -37,13 +40,23 @@ exports.routesConfig = (app) => {
   app.patch("/packings/:packingId/remove/:orderId", [
     ValidationMiddleware.validJWTNeeded,
     PermissionMiddleware.minimumPermissionLevelRequired(COURIER),
+    PackingMiddleware.packingIsUnLocked,
     PackingController.removeOrderFromPacking,
   ]);
 
-  // get packing list 
+  // get packing list
   app.get("/packinglist/:packingId", [
     ValidationMiddleware.validJWTNeeded,
     PermissionMiddleware.minimumPermissionLevelRequired(COURIER),
     PackingController.getPackingList,
+  ]);
+
+  // unlock packing if there's user error.
+  app.patch("/packings/:packingId/unlock", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.minimumPermissionLevelRequired(ADMIN),
+    PackingMiddleware.packingIsNotDone,
+    PackingMiddleware.packingIsLocked,
+    PackingController.unlockPacking,
   ]);
 };

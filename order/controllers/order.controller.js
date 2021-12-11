@@ -9,6 +9,8 @@ const {
   Service,
   Code,
   Post,
+  Type,
+  prices,
 } = require("../../common/models/main.model");
 const { customAlphabet } = require("nanoid/async");
 const CounterModel = require("../../common/models/counter.model");
@@ -40,6 +42,10 @@ exports.createNewOrder = (socket) => {
       return res.status(404).send({ error: "origin Id not found!" });
     }
 
+    const type = await Type.findOne({ where: { id: req.body.itemTypeId } });
+    if (type === null) {
+      return res.status(404).send({ error: "Type Id not found!" });
+    }
     const serviceId = req.body.serviceId;
 
     // this is billing
@@ -51,6 +57,17 @@ exports.createNewOrder = (socket) => {
     });
     if (service !== null) {
       serviceAmount = service.dataValues.setPrice;
+      const priceData = await prices(
+        serviceAmount,
+        req.body.itemWeight,
+        req.body.itemHeight,
+        req.body.itemWidth,
+        req.body.itemLong,
+        req.body.senderOriginId,
+        req.body.recipientDestinationId
+      );
+      serviceAmount = priceData.price;
+      // set price
     } else {
       output.success = false;
       output.error = "Not Found!";
@@ -175,7 +192,6 @@ exports.createNewOrder = (socket) => {
       recipientAddress: req.body.recipientAddress,
       recipientPostCode: req.body.recipientPostCode,
       itemName: req.body.itemName,
-      itemTypeId: req.body.itemTypeId,
       itemWeight: req.body.itemWeight,
       itemQty: req.body.itemQty,
       itemDimension:
@@ -204,6 +220,7 @@ exports.createNewOrder = (socket) => {
       newOrder.setService(service);
       newOrder.setOrigin(origin);
       newOrder.setDestination(destination);
+      newOrder.setType(type);
 
       if (userId) {
         const UserData = await User.findOne({ where: { id: userId } });
@@ -229,7 +246,7 @@ exports.createNewOrder = (socket) => {
       if (socket) {
         // here for notification
       }
-      
+
       output.success = true;
       output.awbNumber = awbNumber;
       output.billingId = billingId;
@@ -341,8 +358,8 @@ exports.trackOrder = (req, res) => {
 
 exports.courierTracksOrder = (permited) => {
   return (req, res) => {
-    Tracking.findOne({
-      where: { orderId: req.params.orderId },
+    Tracking.findAll({
+      where: { orderId: req.params.orderId, UserId: req.jwt.userId },
       include: [
         {
           model: User,
@@ -351,16 +368,10 @@ exports.courierTracksOrder = (permited) => {
       ],
     })
       .then((data) => {
-        if (
-          req.jwt.userId !== data.User.id &&
-          req.jwt.permissionLevel & permited
-        ) {
-          return res.status(401).send();
-        }
         res.send(data);
       })
       .catch((err) => {
-        res.status(500).send(err);
+        res.status(500).send();
       });
   };
 };
