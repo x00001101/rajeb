@@ -12,6 +12,7 @@ const Setting = db.define(
     converter: DataTypes.INTEGER(10),
     courierPercentage: DataTypes.DECIMAL(10, 2),
     ootPercentage: DataTypes.DECIMAL(10, 2),
+    courierPercentageBonus: DataTypes.DECIMAL(10, 2),
   },
   {
     createdAt: false,

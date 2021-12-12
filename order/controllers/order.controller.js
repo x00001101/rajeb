@@ -1,4 +1,3 @@
-// const { Order, Billing, Tracking } = require("../models/order.model");
 const {
   User,
   Order,
@@ -10,11 +9,13 @@ const {
   Code,
   Post,
   Type,
+  BillingType,
   prices,
 } = require("../../common/models/main.model");
 const { customAlphabet } = require("nanoid/async");
 const CounterModel = require("../../common/models/counter.model");
 const { Village } = require("../../common/models/region.model");
+const { RESERVED_EVENTS } = require("socket.io/dist/socket");
 
 const nanoid = customAlphabet("0123456789", 12);
 
@@ -41,7 +42,6 @@ exports.createNewOrder = (socket) => {
     if (destination === null) {
       return res.status(404).send({ error: "origin Id not found!" });
     }
-
     const type = await Type.findOne({ where: { id: req.body.itemTypeId } });
     if (type === null) {
       return res.status(404).send({ error: "Type Id not found!" });
@@ -389,4 +389,44 @@ exports.deleteOrder = async (req, res) => {
       .status(403)
       .send({ error: `This order ${req.params.orderId} can not be deleted!` });
   }
+};
+
+exports.setBillingPaymentMethod = async (req, res) => {
+  const billing = await Billing.findOne({
+    where: { id: req.params.billingId },
+  });
+  if (billing === null) {
+    return res
+      .status(404)
+      .send({ success: false, error: "Billing is not found!" });
+  }
+  const billingType = await BillingType.findOne({
+    where: { id: req.body.billingTypeId },
+  });
+  if (billingType === null) {
+    return res
+      .status(404)
+      .send({ success: false, error: "Billing Type is not found!" });
+  }
+  try {
+    billing.setBillingType(billingType);
+    Billing.update(
+      { paid: billingType.billingAutoPaid },
+      { where: { id: req.params.billingId } }
+    );
+    res.send({ success: true });
+  } catch (err) {
+    return res.status(500).send();
+  }
+};
+
+exports.getOrderDetail = (req, res) => {
+  if (!req.params.orderId) {
+    return res.status(403).send({ success: false, error: "Need order id!" });
+  }
+  Order.findOne({ where: { id: req.params.orderId }, include: Billing })
+    .then((data) => {
+      res.send(data);
+    })
+    .catch((err) => res.status(500).send());
 };

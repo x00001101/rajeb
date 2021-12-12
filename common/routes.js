@@ -1,6 +1,7 @@
 const RegionController = require("./controllers/region.controller");
 const SettingController = require("./controllers/setting.controller");
 const CodeController = require("./controllers/code.controller");
+const BillingController = require("./controllers/billing.controller");
 const PermissionMiddleware = require("../auth/middlewares/auth.permission.middleware");
 const ValidationMiddleware = require("../auth/middlewares/auth.validation.middleware");
 const DataValidatorMiddleware = require("./middlewares/verify.data.middleware");
@@ -19,7 +20,7 @@ exports.routesConfig = (app) => {
 
   app.get("/regions", [RegionController.getRegion]);
 
-  app.post("/settings", [
+  app.put("/settings", [
     ValidationMiddleware.validJWTNeeded,
     PermissionMiddleware.minimumPermissionLevelRequired(SUPER_USER),
     DataValidatorMiddleware.dataVerification(
@@ -62,5 +63,11 @@ exports.routesConfig = (app) => {
     ValidationMiddleware.validJWTNeeded,
     PermissionMiddleware.minimumPermissionLevelRequired(ADMIN),
     CodeController.getAllTypes,
+  ]);
+
+  app.post("/billingtypes", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.minimumPermissionLevelRequired(SUPER_USER),
+    BillingController.createBillingType,
   ]);
 };

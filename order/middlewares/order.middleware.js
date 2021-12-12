@@ -1,4 +1,4 @@
-const { Post, Tracking } = require("../../common/models/main.model");
+const { Post, Tracking, Billing } = require("../../common/models/main.model");
 const { Village } = require("../../common/models/region.model");
 
 exports.postChecking = async (req, res, next) => {
@@ -67,4 +67,16 @@ exports.checkIfOrderHasAlreadyHadSameTrackingCode = async (req, res, next) => {
       message: "Order has already had Code " + req.body.codeId,
     });
   }
+};
+
+exports.orderIsPaid = async (req, res, next) => {
+  const billing = await Billing.findOne({
+    where: { OrderId: req.params.orderId, paid: true },
+  });
+  if (billing === null) {
+    return res
+      .status(403)
+      .send({ success: false, error: "Order is not paid!" });
+  }
+  return next();
 };

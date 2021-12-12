@@ -31,9 +31,20 @@ exports.dataVerification = (title) => {
       return res.status(400).send(output);
     }
     if (title === "verifyDataRequestForCreatingNewConverter") {
-      requirements = ["converter", "courierPercentage", "ootPercentage"];
+      requirements = [
+        "converter",
+        "courierPercentage",
+        "ootPercentage",
+        "courierPercentageBonus",
+      ];
+    } else if (title === "verifyDataRequestForBillingPaymentMethod") {
+      requirements = ["billingTypeId"];
     } else if (title === "verifyDataRequestForGetPrice") {
       requirements = ["item_weight"];
+    } else if (title === "verifyDataRequestForCreateBilling") {
+      requirements = ["id", "billingAutoPaid"];
+    } else if (title === "verifyDataRequestForPackingDone") {
+      requirements = ["codeId", "postId"];
     } else if (title === "verifyDataRequestForPackingLock") {
       requirements = ["codeId"];
     } else if (title === "verifyDataRequestForCreatingNewService") {

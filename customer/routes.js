@@ -15,7 +15,14 @@ exports.routesConfig = (app, socket) => {
   app.get("/customer", [
     ValidationMiddleware.validJWTNeeded,
     PermissionMiddleware.onlyActiveUserCanDoThisAction,
-    PermissionMiddleware.onlyAdminAndPermitedPermissionLevelRequired(PERMITED_CUSTOMER),
+    PermissionMiddleware.onlyAdminAndPermitedPermissionLevelRequired(
+      PERMITED_CUSTOMER
+    ),
     CustomerController.customerPage(socket),
+  ]);
+  app.get("/customer/orders/:userId", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.onlySameUserOrAdminCanDoThisAction,
+    CustomerController.customerOrderHistory,
   ]);
 };

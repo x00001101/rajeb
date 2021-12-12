@@ -33,6 +33,9 @@ exports.routesConfig = (app) => {
     ValidationMiddleware.validJWTNeeded,
     PermissionMiddleware.minimumPermissionLevelRequired(COURIER),
     VerifyDataMiddleware.dataVerification("verifyDataRequestForPackingLock"),
+    PackingMiddleware.packingIsNotInCheckingMode,
+    PackingMiddleware.packingIsNotDone,
+    PackingMiddleware.packingIsUnLocked,
     PackingController.lockPacking,
   ]);
 
@@ -55,8 +58,45 @@ exports.routesConfig = (app) => {
   app.patch("/packings/:packingId/unlock", [
     ValidationMiddleware.validJWTNeeded,
     PermissionMiddleware.minimumPermissionLevelRequired(ADMIN),
+    PackingMiddleware.packingIsNotInCheckingMode,
     PackingMiddleware.packingIsNotDone,
     PackingMiddleware.packingIsLocked,
     PackingController.unlockPacking,
+  ]);
+
+  // scan packing list
+  app.patch("/packings/:packingId/scan", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.minimumPermissionLevelRequired(COURIER),
+    PackingMiddleware.packingIsNotInCheckingMode,
+    PackingMiddleware.packingIsNotDone,
+    PackingMiddleware.packingIsLocked,
+    PackingController.setPackingToChecking,
+  ]);
+
+  // check order id inside packing
+  app.patch("/packings/:packingId/check/:orderId", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.minimumPermissionLevelRequired(COURIER),
+    PackingMiddleware.packingIsInCheckingMode,
+    PackingController.checkOrderIdInsidePacking,
+  ]);
+
+  // cancel packing check
+  app.patch("/packings/:packingId/cancel", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.minimumPermissionLevelRequired(ADMIN),
+    PackingMiddleware.packingIsInCheckingMode,
+    PackingController.cancelCheckingOrderInsidePacking,
+  ]);
+
+  // set to done
+  app.patch("/packings/:packingId", [
+    ValidationMiddleware.validJWTNeeded,
+    VerifyDataMiddleware.dataVerification("verifyDataRequestForPackingDone"),
+    PermissionMiddleware.minimumPermissionLevelRequired(COURIER),
+    PackingMiddleware.packingIsNotDone,
+    PackingMiddleware.packingIsInCheckingMode,
+    PackingController.setPackingDone,
   ]);
 };

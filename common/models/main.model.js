@@ -398,7 +398,7 @@ const Packing = db.define("Packing", {
     defaultValue: 0,
   },
   status: {
-    type: DataTypes.ENUM("UNLOCKED", "LOCKED", "DONE"),
+    type: DataTypes.ENUM("UNLOCKED", "LOCKED", "CHECKING", "DONE"),
     defaultValue: "UNLOCKED",
   },
 });
@@ -443,6 +443,42 @@ const Room = db.define(
 );
 User.hasOne(Room);
 Room.belongsTo(User);
+
+const CourierTransaction = db.define("CourierTransaction", {
+  amount: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  mutation: {
+    type: DataTypes.ENUM("IN", "OUT"),
+    allowNull: false,
+  },
+  type: {
+    type: DataTypes.ENUM("O_P", "B_F", "P_C", "P_S"),
+    comment:
+      "O_P: Order Payment; B_F: Balance Filling; P_C: Payment Company; P_S: Payment Self",
+  },
+});
+
+Wallet.hasMany(CourierTransaction);
+CourierTransaction.belongsTo(Wallet);
+
+const BillingType = db.define("BillingType", {
+  id: {
+    type: DataTypes.STRING(10),
+    primaryKey: true,
+    allowNull: false,
+  },
+  billingAutoPaid: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    allowNull: false,
+  },
+  description: DataTypes.STRING,
+});
+
+BillingType.hasMany(Billing);
+Billing.belongsTo(BillingType);
 
 const prices = async (
   servicePrice,
@@ -499,4 +535,6 @@ exports.Packing = Packing;
 exports.PackingList = PackingList;
 exports.Room = Room;
 exports.Type = Type;
+exports.CourierTransaction = CourierTransaction;
+exports.BillingType = BillingType;
 exports.prices = prices;

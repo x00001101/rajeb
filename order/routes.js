@@ -35,6 +35,7 @@ exports.routesConfig = (app, socket) => {
     DataValidatorMiddleware.dataVerification(
       "verifyDataRequestForPatchingOrders"
     ),
+    OrderMiddleware.orderIsPaid,
     OrderMiddleware.checkIfOrderHasAlreadyHadSameTrackingCode,
     OrderController.patchOrder,
   ]);
@@ -47,7 +48,23 @@ exports.routesConfig = (app, socket) => {
     OrderController.courierTracksOrder(ADMIN),
   ]);
 
+  app.get("/orders/:orderId", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.onlyAdminAndPermitedPermissionLevelRequired(
+      PERMITED_COURIER
+    ),
+    OrderController.getOrderDetail,
+  ]);
+
   app.get("/tracking", [OrderController.trackOrder]);
 
   app.delete("/orders/:orderId", [OrderController.deleteOrder]);
+
+  // set payment method for billing
+  app.patch("/billings/:billingId/pm", [
+    DataValidatorMiddleware.dataVerification(
+      "verifyDataRequestForBillingPaymentMethod"
+    ),
+    OrderController.setBillingPaymentMethod,
+  ]);
 };

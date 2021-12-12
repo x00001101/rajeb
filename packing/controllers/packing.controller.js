@@ -205,3 +205,128 @@ exports.getPackingList = async (req, res) => {
   });
   res.send(packinglist);
 };
+
+exports.setPackingToChecking = async (req, res) => {
+  const packing = await Packing.update(
+    { status: "CHECKING" },
+    { where: { id: req.params.packingId } }
+  );
+  res.send(packing);
+};
+
+exports.checkOrderIdInsidePacking = async (req, res) => {
+  if (!req.params.orderId) {
+    return res.status(403).send({ error: "Need Order Id!" });
+  }
+  const order = await Order.findOne({ where: { id: req.params.orderId } });
+  if (order === null) {
+    return res.status(404).send({ error: "Wrong Order Id!" });
+  }
+  // find order is inside the packing id
+  const packinglist = await PackingList.findOne({
+    where: { PackingId: req.params.packingId, OrderId: req.params.orderId },
+  });
+  if (packinglist === null) {
+    return res
+      .status(404)
+      .send({ error: "Order Id is not found inside Packing List" });
+  }
+  const check = await PackingList.update(
+    { checked: true },
+    { where: { PackingId: req.params.packingId, OrderId: req.params.orderId } }
+  );
+  if (check[0] === 0) {
+    return res
+      .status(403)
+      .send({ success: false, error: "Order is already checked!" });
+  }
+  res.send({ success: true });
+};
+
+exports.cancelCheckingOrderInsidePacking = async (req, res) => {
+  await PackingList.update(
+    { checked: false },
+    { where: { PackingId: req.params.packingId } }
+  );
+  await Packing.update(
+    { status: "LOCKED" },
+    { where: { id: req.params.packingId } }
+  );
+  res.send();
+};
+
+exports.setPackingDone = async (req, res) => {
+  // check all order data in packing list is done
+  await PackingList.findAll({
+    where: { PackingId: req.params.packingId },
+  })
+    .then(async (data) => {
+      let error = [];
+      const code = await Code.findOne({ where: { id: req.body.codeId } });
+      if (code === null) {
+        return res
+          .status(404)
+          .send({ success: false, error: "Code id not found!" });
+      }
+      // check if post is the same as the packing destination
+      const packingDestination = await Packing.findOne({
+        where: { id: req.params.packingId, toPostId: req.body.postId },
+      });
+      if (packingDestination === null) {
+        console.log(packingDestination);
+        return res.status(403).send({
+          success: false,
+          error: "Post id is not the Packing Destination Id",
+        });
+      }
+      const post = await Post.findOne({ where: { id: req.body.postId } });
+      if (post === null) {
+        return res
+          .status(404)
+          .send({ success: false, error: "Post Id not found!" });
+      }
+
+      const user = await User.findOne({ where: { id: req.jwt.userId } });
+      if (user === null) {
+        return res
+          .status(404)
+          .send({ success: false, error: "User not found!" });
+      }
+
+      for await (list of data) {
+        if (!list.checked) {
+          error.push(list.OrderId);
+        }
+      }
+      if (error.length > 0) {
+        return res.status(403).send({
+          success: false,
+          error: "There are still unchecked Order in Packing list!",
+          uncheckedOrder: error,
+        });
+      }
+      for await (list of data) {
+        const order = await Order.findOne({ where: { id: list.OrderId } });
+        try {
+          const track = await Tracking.create({
+            description: req.body.description,
+            packing: true,
+          });
+          track.setCode(code);
+          track.setOrder(order);
+          track.setPost(post);
+          track.setUser(user);
+        } catch (err) {
+          console.log(err);
+        }
+      }
+      await Packing.update(
+        { status: "DONE" },
+        { where: { id: req.params.packingId } }
+      );
+      res.send({ success: true });
+    })
+    .catch((err) => {
+      res.status(500).send();
+    });
+};
