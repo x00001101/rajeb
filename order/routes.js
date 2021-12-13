@@ -67,4 +67,11 @@ exports.routesConfig = (app, socket) => {
     ),
     OrderController.setBillingPaymentMethod,
   ]);
+
+  // confirm payment 
+  app.patch("/billings/:billingId/cp", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.onlyAdminAndPermitedPermissionLevelRequired(PERMITED_COURIER),
+    OrderController.confirmPayment,
+  ]);
 };

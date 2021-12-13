@@ -10,13 +10,14 @@ const {
   Post,
   Type,
   BillingType,
+  Envelope,
+  Wallet,
   prices,
 } = require("../../common/models/main.model");
 const { customAlphabet } = require("nanoid/async");
 const CounterModel = require("../../common/models/counter.model");
 const { Village } = require("../../common/models/region.model");
-const { RESERVED_EVENTS } = require("socket.io/dist/socket");
-
+const { Op } = require("sequelize");
 const nanoid = customAlphabet("0123456789", 12);
 
 let output = {};
@@ -408,6 +409,9 @@ exports.setBillingPaymentMethod = async (req, res) => {
       .status(404)
       .send({ success: false, error: "Billing Type is not found!" });
   }
+  if (billing.BillingTypeId != null) {
+    return res.status(400).send({ success: false, error: "Billing payment method is already set!"});
+  }
   try {
     billing.setBillingType(billingType);
     Billing.update(
@@ -429,4 +433,26 @@ exports.getOrderDetail = (req, res) => {
       res.send(data);
     })
     .catch((err) => res.status(500).send());
+};
+
+exports.confirmPayment = async (req, res) => {
+  if (!req.params.billingId) {
+    return res.status(403).send({ success: false, error: "Need billing Id"});
+  }
+  // check if billing is set 
+  const billing = await Billing.findOne({ 
+    where: { 
+      id: req.params.billingId, 
+      BillingTypeId: {
+        [Op.not]: null
+      } 
+    },
+    include: BillingType
+  });
+  if (billing === null) {
+    return res.status(403).send({ success: false, error: "Billing is not set!"});
+  }
+  return res.send(billing);
+  // set courier transaction 
+
 };

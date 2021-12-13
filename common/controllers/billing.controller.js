@@ -3,7 +3,8 @@ const { BillingType } = require("../models/main.model");
 exports.createBillingType = (req, res) => {
   BillingType.create({
     id: req.body.id,
-    billingAutoPaid: req.body.billingAutoPaid,
+    autoPaid: req.body.autoPaid,
+    payToCust: req.body.payToCust,
     description: req.body.description,
   })
     .then((data) => {

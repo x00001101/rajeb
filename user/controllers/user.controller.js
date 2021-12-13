@@ -4,10 +4,14 @@ const { Op } = require("sequelize");
 const models = require("../../common/models/main.model");
 const UserModel = models.User;
 const KeyModel = models.Key;
+const Wallet = models.Wallet;
+const Envelope = models.Envelope;
 const crypto = require("crypto");
 const jwtSecret = process.env.JWT_SECRET,
   jwt = require("jsonwebtoken");
 const EmailModel = require("../../email/models/email.model");
+
+const COURIER = process.env.COURIER;
 
 const generateOtp = () => {
   let len = 6;
@@ -40,6 +44,14 @@ const createNewUser = async (host, newUser, result) => {
 
   try {
     const UserData = await UserModel.create(newUser);
+    const wallet = await Wallet.create({ balance: 0 });
+
+    wallet.setUser(UserData);
+
+    if (newUser.permissionLevel > COURIER) {
+      const envelope = await Envelope.create({ balance: 0 });
+      envelope.setUser(UserData);
+    }
 
     const key = {
       otp: null,

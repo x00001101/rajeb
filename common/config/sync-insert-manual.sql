@@ -77,7 +77,7 @@
 --
 -- Dumping data for table `Provinces`
 --
-INSERT INTO `Settings` SET `id` = 'SETTING', `converter` = 6000, `courierPercentage` = 20.00, `ootPercentage` = 150.00, `courierPrecentageBonus` = 30.00;
+INSERT INTO `Settings` SET `id` = 'SETTING', `converter` = 6000, `courierPercentage` = 20.00, `ootPercentage` = 150.00, `courierPercentageBonus` = 30.00;
 
 INSERT INTO `Users` (`id`, `fullName`, `phoneNumber`, `email`, `password`, `permissionLevel`, `active`, `createdAt`, `updatedAt`) VALUES ('51db07e3-6a6f-4aac-91f0-f791362acce1', 'Admin', '0', 'admin@jeb.id', 'mIiPo3jHkQdM5PgKeVvHbw==$6YWEyZw4PX7fGWTX7qntOank9cs6qwfZSzWCWoXWyrSXfuqQdHcAuLmIBxhKiHQAuJdcLzhfmPgtUSP1oN7sdA==', '6159', 1, '2021-11-12 01:06:34', '2021-11-12 01:06:34');
 

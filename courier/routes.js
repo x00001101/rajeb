@@ -28,4 +28,11 @@ exports.routesConfig = (app, socket) => {
     ),
     CourierController.courierHistory,
   ]);
+
+  app.post("/courier/paycustomer/:orderId", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.onlyAdminAndPermitedPermissionLevelRequired( PERMITED_COURIER
+    ),
+    
+  ])
 };

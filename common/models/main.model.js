@@ -383,8 +383,22 @@ const Wallet = db.define("Wallet", {
   balance: DataTypes.DECIMAL(10, 2),
 });
 
-User.hasOne(Wallet);
+User.hasOne(Wallet, { onDelete: 'cascade' });
 Wallet.belongsTo(User);
+
+// for operational money
+const Envelope = db.define("Envelope", {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+    allowNull: false,
+  },
+  balance: DataTypes.DECIMAL(10,2),
+});
+
+User.hasOne(Envelope, { onDelete: 'cascade' });
+Envelope.belongsTo(User);
 
 const Packing = db.define("Packing", {
   id: {
@@ -460,8 +474,8 @@ const CourierTransaction = db.define("CourierTransaction", {
   },
 });
 
-Wallet.hasMany(CourierTransaction);
-CourierTransaction.belongsTo(Wallet);
+User.hasMany(CourierTransaction);
+CourierTransaction.belongsTo(User);
 
 const BillingType = db.define("BillingType", {
   id: {
@@ -469,7 +483,12 @@ const BillingType = db.define("BillingType", {
     primaryKey: true,
     allowNull: false,
   },
-  billingAutoPaid: {
+  autoPaid: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    allowNull: false,
+  },
+  payToCust: {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
     allowNull: false,
@@ -531,6 +550,7 @@ exports.Service = Service;
 exports.Post = Post;
 exports.Code = Code;
 exports.Wallet = Wallet;
+exports.Envelope = Envelope;
 exports.Packing = Packing;
 exports.PackingList = PackingList;
 exports.Room = Room;
