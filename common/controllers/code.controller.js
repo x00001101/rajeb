@@ -1,4 +1,4 @@
-const { Code, Type } = require("../models/main.model");
+const { Code, Type, CodeAttribute } = require("../models/main.model");
 
 let output = {};
 
@@ -57,4 +57,33 @@ exports.deleteType = (req, res) => {
   Type.destroy({ where: { id: req.params.typeId } })
     .then(() => res.send())
     .catch((err) => res.status(500).send(err));
+};
+
+exports.setCodeAttribute = async (req, res) => {
+  if (!req.params.codeId) {
+    return res.status(403).send({ success: false, error: "Need Code Id!" });
+  }
+  // find code that is valued
+  const codeAttribute = await CodeAttribute.findOne({
+    where: { CodeId: req.params.codeId, value: req.body.value },
+  });
+  if (codeAttribute != null) {
+    return res
+      .status(403)
+      .send({
+        success: false,
+        error: "Code already has " + req.body.value + " value",
+      });
+  }
+  const code = await Code.findOne({ where: { id: req.params.codeId } });
+  try {
+    const attribute = await CodeAttribute.create({
+      value: req.body.value,
+    });
+    attribute.setCode(code);
+    res.send();
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send();
+  }
 };

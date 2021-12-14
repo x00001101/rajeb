@@ -373,6 +373,28 @@ const Code = db.define(
 Code.hasMany(Tracking);
 Tracking.belongsTo(Code);
 
+const CodeAttribute = db.define(
+  "CodeAttribute",
+  {
+    value: {
+      type: DataTypes.ENUM("FINISH"),
+      allowNull: false,
+    },
+  },
+  {
+    createdAt: false,
+    updatedAt: false,
+    indexes: [
+      {
+        fields: ["value"],
+      },
+    ],
+  }
+);
+
+Code.hasMany(CodeAttribute);
+CodeAttribute.belongsTo(Code);
+
 const Wallet = db.define("Wallet", {
   id: {
     type: DataTypes.UUID,
@@ -383,7 +405,7 @@ const Wallet = db.define("Wallet", {
   balance: DataTypes.DECIMAL(10, 2),
 });
 
-User.hasOne(Wallet, { onDelete: 'cascade' });
+User.hasOne(Wallet, { onDelete: "cascade" });
 Wallet.belongsTo(User);
 
 // for operational money
@@ -394,10 +416,10 @@ const Envelope = db.define("Envelope", {
     primaryKey: true,
     allowNull: false,
   },
-  balance: DataTypes.DECIMAL(10,2),
+  balance: DataTypes.DECIMAL(10, 2),
 });
 
-User.hasOne(Envelope, { onDelete: 'cascade' });
+User.hasOne(Envelope, { onDelete: "cascade" });
 Envelope.belongsTo(User);
 
 const Packing = db.define("Packing", {
@@ -460,7 +482,7 @@ Room.belongsTo(User);
 
 const CourierTransaction = db.define("CourierTransaction", {
   amount: {
-    type: DataTypes.DECIMAL(10,2),
+    type: DataTypes.DECIMAL(10, 2),
     allowNull: false,
   },
   mutation: {
@@ -477,7 +499,7 @@ const CourierTransaction = db.define("CourierTransaction", {
     type: DataTypes.ENUM("W", "E", "O"),
     comment: "W: Wallet; E: Envelope, O: Outside",
     allowNull: false,
-  }
+  },
 });
 
 User.hasMany(CourierTransaction);
@@ -555,6 +577,7 @@ exports.Pouch = Pouch;
 exports.Service = Service;
 exports.Post = Post;
 exports.Code = Code;
+exports.CodeAttribute = CodeAttribute;
 exports.Wallet = Wallet;
 exports.Envelope = Envelope;
 exports.Packing = Packing;

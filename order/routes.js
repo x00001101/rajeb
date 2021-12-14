@@ -68,11 +68,22 @@ exports.routesConfig = (app, socket) => {
     OrderController.setBillingPaymentMethod,
   ]);
 
-  // confirm payment 
+  // confirm payment
   app.patch("/billings/:billingId/cp", [
     ValidationMiddleware.validJWTNeeded,
-    PermissionMiddleware.onlyAdminAndPermitedPermissionLevelRequired(PERMITED_COURIER),
+    PermissionMiddleware.onlyAdminAndPermitedPermissionLevelRequired(
+      PERMITED_COURIER
+    ),
     OrderMiddleware.checkEnvelopeAndWalletUser,
     OrderController.confirmPayment,
+  ]);
+
+  // finish order
+  app.patch("/orders/:orderId/f", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.onlyAdminAndPermitedPermissionLevelRequired(
+      PERMITED_COURIER
+    ),
+    OrderController.finishOrder,
   ]);
 };

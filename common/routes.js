@@ -37,8 +37,14 @@ exports.routesConfig = (app) => {
 
   app.post("/codes", [
     ValidationMiddleware.validJWTNeeded,
-    PermissionMiddleware.minimumPermissionLevelRequired(ADMIN),
+    PermissionMiddleware.minimumPermissionLevelRequired(SUPER_USER),
     CodeController.createNewCode,
+  ]);
+
+  app.patch("/codes/:codeId", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.minimumPermissionLevelRequired(SUPER_USER),
+    CodeController.setCodeAttribute,
   ]);
 
   app.get("/codes", [
