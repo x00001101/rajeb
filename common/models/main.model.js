@@ -460,7 +460,7 @@ Room.belongsTo(User);
 
 const CourierTransaction = db.define("CourierTransaction", {
   amount: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.DECIMAL(10,2),
     allowNull: false,
   },
   mutation: {
@@ -471,7 +471,13 @@ const CourierTransaction = db.define("CourierTransaction", {
     type: DataTypes.ENUM("O_P", "B_F", "P_C", "P_S"),
     comment:
       "O_P: Order Payment; B_F: Balance Filling; P_C: Payment Company; P_S: Payment Self",
+    allowNull: false,
   },
+  transaction: {
+    type: DataTypes.ENUM("W", "E", "O"),
+    comment: "W: Wallet; E: Envelope, O: Outside",
+    allowNull: false,
+  }
 });
 
 User.hasMany(CourierTransaction);

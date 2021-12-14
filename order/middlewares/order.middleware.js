@@ -1,4 +1,4 @@
-const { Post, Tracking, Billing } = require("../../common/models/main.model");
+const { Post, Tracking, Billing, Envelope, Wallet } = require("../../common/models/main.model");
 const { Village } = require("../../common/models/region.model");
 
 exports.postChecking = async (req, res, next) => {
@@ -80,3 +80,15 @@ exports.orderIsPaid = async (req, res, next) => {
   }
   return next();
 };
+
+exports.checkEnvelopeAndWalletUser = async (req, res, next) => {
+  const envelope = await Envelope.findOne({ where: { UserId: req.jwt.userId }});
+  if (envelope === null) {
+    return res.status(404).send({ success: false, error: "Envelope Null"});
+  }  
+  const wallet = await Wallet.findOne({ where: { UserId: req.jwt.userId }});
+  if (wallet === null) {
+    return res.status(404).send({ success: false, error: "Wallet Null"});
+  }
+  return next();
+}

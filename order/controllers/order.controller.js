@@ -13,12 +13,14 @@ const {
   Envelope,
   Wallet,
   prices,
+  CourierTransaction,
 } = require("../../common/models/main.model");
 const { customAlphabet } = require("nanoid/async");
 const CounterModel = require("../../common/models/counter.model");
 const { Village } = require("../../common/models/region.model");
-const { Op } = require("sequelize");
+const { Sequelize, Op } = require("sequelize");
 const nanoid = customAlphabet("0123456789", 12);
+const SettingModel = require("../../common/models/setting.model");
 
 let output = {};
 
@@ -415,7 +417,7 @@ exports.setBillingPaymentMethod = async (req, res) => {
   try {
     billing.setBillingType(billingType);
     Billing.update(
-      { paid: billingType.billingAutoPaid },
+      { paid: billingType.autoPaid },
       { where: { id: req.params.billingId } }
     );
     res.send({ success: true });
@@ -439,20 +441,113 @@ exports.confirmPayment = async (req, res) => {
   if (!req.params.billingId) {
     return res.status(403).send({ success: false, error: "Need billing Id"});
   }
+  if (!req.body.fromEnvelope) {
+    req.body.fromEnvelope = false;
+  }
   // check if billing is set 
+  const user = await User.findOne({ where: { id: req.jwt.userId }});
+  const wallet = await Wallet.findOne({ where: { UserId: user.id }});
+  const envelope = await Envelope.findOne({ where: { UserId: user.id }});
+  const walletId = wallet.id;
+  const envelopeId = envelope.id;
   const billing = await Billing.findOne({ 
     where: { 
       id: req.params.billingId, 
       BillingTypeId: {
         [Op.not]: null
-      } 
+      },
     },
-    include: BillingType
+    include: Order,
+    include: BillingType,
   });
   if (billing === null) {
     return res.status(403).send({ success: false, error: "Billing is not set!"});
   }
-  return res.send(billing);
-  // set courier transaction 
+  if (billing.paid && !billing.BillingType.autoPaid) {
+    return res.status(403).send({ success: false, error: "Billing is already paid"});
+  }
+  // count money 
+  const total = billing.totalAmount;
+  const setting = await SettingModel.findOne({ where: { id: "SETTING" }});
+  const courierPercentage = setting.courierPercentage;
+  const courierPercentagePlus = setting.courierPercentageBonus;
 
+  const percent = 100 - Number(courierPercentage);
+  const toEnvelope = Number(total) * Number(percent) / 100;
+  const toWallet = Number(total) * Number(courierPercentage) / 100; 
+
+  const percentPlus = 100 - Number(courierPercentagePlus);
+  const toEnvelopePlus = Number(total) * Number(percentPlus) / 100;
+  const toWalletPlus = Number(total) * Number(courierPercentagePlus) / 100; 
+
+  // transfer money to user envelope and wallet
+  // create transaction history 
+  try {
+    if (!billing.BillingType.autoPaid) {
+      const ctEnvelope = await CourierTransaction.create({
+        amount: Number(toEnvelope),
+        mutation: "IN",
+        type: "O_P",
+        transaction: "E",
+      });
+      ctEnvelope.setUser(user);
+      const ctWallet = await CourierTransaction.create({
+        amount: Number(toWallet),
+        mutation: "IN",
+        type: "O_P",
+        transaction: "W",
+      });
+      ctWallet.setUser(user);
+
+      // set courier transaction 
+
+      await Envelope.increment({ balance: Number(toEnvelope) }, { where: { id: envelopeId }});
+
+      await Wallet.increment({ balance: Number(toWallet) }, { where: { id: walletId }});
+
+      // if not paid then set to paid
+      await Billing.update({ paid: true }, { where: { id: req.params.billingId }});
+    } else {
+      if (billing.BillingType.payToCust) {
+        let walletValue;
+        if (req.body.fromEnvelope) {
+          const ctPtc = await CourierTransaction.create({
+            amount: Number(billing.Order.itemValue),  
+            mutation: "OUT",
+            type: "P_C",
+            transaction: "E",
+          });
+
+          await Envelope.increment({ balance: Number(billing.Order.itemValue) * -1 }, { where: { id: envelopeId }});
+
+          walletValue = toWallet;
+        } else if (!req.body.fromEnvelope) {
+          const ctPtc = await CourierTransaction.create({
+            amount: Number(billing.Order.itemValue),  
+            mutation: "OUT",
+            type: "P_S",
+            transaction: "O",
+          });
+
+          walletValue = toWalletPlus;
+        }
+        ctPtc.setUser(User);
+        
+        const ctPtcW = await CourierTransaction.create({
+          amount: Number(walletValue),
+          mutation: "IN",
+          type: "O_P",
+          transaction: "W",
+        });
+        ctPtcW.setUser(User);
+
+        await Wallet.increment({ balance: Number(walletValue) }, { where: { id: walletId }});
+
+      }
+    }
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send();
+  }
+  return res.send({success: true});
 };

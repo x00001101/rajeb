@@ -72,6 +72,7 @@ exports.routesConfig = (app, socket) => {
   app.patch("/billings/:billingId/cp", [
     ValidationMiddleware.validJWTNeeded,
     PermissionMiddleware.onlyAdminAndPermitedPermissionLevelRequired(PERMITED_COURIER),
+    OrderMiddleware.checkEnvelopeAndWalletUser,
     OrderController.confirmPayment,
   ]);
 };
