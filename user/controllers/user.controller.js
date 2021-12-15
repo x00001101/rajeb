@@ -1,12 +1,12 @@
 const { Op } = require("sequelize");
-// const UserModel = require("../models/user.model");
-// const KeyModel = require("../../key/models/key.model");
 const models = require("../../common/models/main.model");
 const UserModel = models.User;
 const KeyModel = models.Key;
 const Wallet = models.Wallet;
 const Envelope = models.Envelope;
 const crypto = require("crypto");
+const CourierTransaction = models.CourierTransaction;
+const AdminTransaction = models.AdminTransaction;
 const jwtSecret = process.env.JWT_SECRET,
   jwt = require("jsonwebtoken");
 const EmailModel = require("../../email/models/email.model");
@@ -319,4 +319,103 @@ exports.getDataFromJWT = (req, res) => {
     phoneNumber: req.jwt.phone_number,
   };
   res.send(UserData);
+};
+
+exports.depositeEnvelope = async (req, res) => {
+  if (!req.params.userId) {
+    return res.status(400).send({ success: false, error: "Need User Id!" });
+  }
+  const user = await UserModel.findOne({ where: { id: req.params.userId } });
+  const userAdmin = await UserModel.findOne({ where: { id: req.jwt.userId } });
+  const type = req.body.type;
+  const envelope = await Envelope.findOne({
+    where: { UserId: req.params.userId },
+  });
+  if (envelope === null) {
+    return res
+      .status(404)
+      .send({ success: false, error: "Envelope not found!" });
+  }
+  let transactionType = "";
+  if (type == "IN") {
+    await Envelope.increment(
+      { balance: Number(req.body.amount) },
+      { where: { id: envelope.id } }
+    );
+    transactionType = "D_I";
+  } else if (type == "OUT") {
+    const balance = envelope.balance;
+    // count available balance
+    const lastBalance = Number(balance) - Number(req.body.amount);
+    if (Number(lastBalance) < 0) {
+      return res
+        .status(400)
+        .send({ success: false, error: "Insufisient balance!" });
+    }
+    await Envelope.increment(
+      { balance: Number(req.body.amount) * -1 },
+      { where: { id: envelope.id } }
+    );
+    transactionType = "D_O";
+  }
+  try {
+    const courierTransaction = await CourierTransaction.create({
+      amount: req.body.amount,
+      mutation: type,
+      type: transactionType,
+      transaction: "E",
+    });
+    courierTransaction.setUser(user);
+
+    const adminTransaction = await AdminTransaction.create();
+    adminTransaction.setUser(userAdmin);
+    adminTransaction.setCourierTransaction(courierTransaction);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send();
+  }
+  res.send();
+};
+
+exports.walletWithdrawal = async (req, res) => {
+  if (!req.params.userId) {
+    return res.status(400).send({ success: false, error: "Need User Id!" });
+  }
+  const wallet = await Wallet.findOne({
+    where: { UserId: req.params.userId },
+  });
+  if (wallet === null) {
+    return res.status(404).send({ success: false, error: "Wallet not found!" });
+  }
+  const user = await UserModel.findOne({ where: { id: req.params.userId } });
+  const userAdmin = await UserModel.findOne({ where: { id: req.jwt.userId } });
+  const amount = req.body.amount;
+  const balance = wallet.balance;
+  const lastBalance = Number(balance) - Number(amount);
+  if (Number(lastBalance) < 0) {
+    return res
+      .status(400)
+      .send({ success: false, error: "Insufisient balance!" });
+  }
+  await Wallet.increment(
+    { balance: Number(amount) * -1 },
+    { where: { id: wallet.id } }
+  );
+  try {
+    const courierTransaction = await CourierTransaction.create({
+      amount: amount,
+      mutation: "OUT",
+      type: "W_W",
+      transaction: "W",
+    });
+    courierTransaction.setUser(user);
+
+    const adminTransaction = await AdminTransaction.create();
+    adminTransaction.setUser(userAdmin);
+    adminTransaction.setCourierTransaction(courierTransaction);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send();
+  }
+  res.send();
 };

@@ -14,6 +14,7 @@ const {
   Wallet,
   prices,
   CourierTransaction,
+  CodeAttribute,
 } = require("../../common/models/main.model");
 const { customAlphabet } = require("nanoid/async");
 const CounterModel = require("../../common/models/counter.model");
@@ -277,7 +278,7 @@ exports.patchOrder = async (req, res) => {
     req.body.postId = null;
   }
   const post = await Post.findOne({ where: { id: req.body.postId } });
-  if (post === null && req.body.postId !== null) {
+  if (post === null && req.body.postId != null) {
     output.error = "Post not found!";
     return res.status(404).send(output);
   }
@@ -297,17 +298,24 @@ exports.patchOrder = async (req, res) => {
     });
     track.setCode(code);
     track.setOrder(order);
-    track.setPost(post);
     track.setUser(user);
     output.success = true;
-    res.send({
+    let ot = {
       ...output,
       code: { ...code.dataValues },
       order: { ...order.dataValues },
-      post: { ...post.dataValues },
       userId: user.dataValues.id,
-    });
+    };
+    if (post != null) {
+      track.setPost(post);
+      ot = {
+        ...ot,
+        post: { ...post.dataValues },
+      };
+    }
+    res.send(ot);
   } catch (err) {
+    console.log(err);
     res.status(500).send(err);
   }
 };
@@ -492,7 +500,7 @@ exports.confirmPayment = async (req, res) => {
     if (Number(availableBalance) < 0 && req.body.fromEnvelope) {
       return res
         .status(403)
-        .send({ success: false, error: "Insuficient balance!"});
+        .send({ success: false, error: "Insuficient balance!" });
     }
   }
   // count money
@@ -592,7 +600,7 @@ exports.confirmPayment = async (req, res) => {
         );
       }
     }
-    Billing.update({ confirmed: true }, { where: { id: billing.id }})
+    Billing.update({ confirmed: true }, { where: { id: billing.id } });
   } catch (err) {
     console.log(err);
     return res.status(500).send();
@@ -608,8 +616,9 @@ exports.finishOrder = async (req, res) => {
   const user = await User.findOne({ where: { id: req.jwt.userId } });
   const wallet = await Wallet.findOne({ where: { UserId: user.id } });
   const envelope = await Envelope.findOne({ where: { UserId: user.id } });
+
   const order = await Order.findOne({
-    where: { id: req.params.orderId },
+    where: { id: req.params.orderId, finished: false },
     include: [
       {
         model: Billing,
@@ -621,7 +630,14 @@ exports.finishOrder = async (req, res) => {
       },
     ],
   });
-  const billing = await Billing.findOne({ where: { id: order.Billing.id }});
+  // check if order is already finished
+  if (order === null) {
+    return res
+      .status(403)
+      .send({ success: false, error: "Order was finished!" });
+  }
+
+  const billing = await Billing.findOne({ where: { id: order.Billing.id } });
   const courierPercentage = setting.courierPercentage;
   const serviceAmount = order.Billing.serviceAmount;
   const totalAmount = order.Billing.totalAmount;
@@ -629,6 +645,19 @@ exports.finishOrder = async (req, res) => {
     (Number(serviceAmount) * Number(courierPercentage)) / 100;
   const toEnvelope = Number(totalAmount) - Number(courierEarning);
   const itemValue = order.itemValue;
+
+  const codeAttribute = await CodeAttribute.findOne({
+    where: {
+      value: "FINISH",
+    },
+    include: Code,
+  });
+
+  if (codeAttribute === null) {
+    return res
+      .status(404)
+      .send({ success: false, error: "Code Attribute is not found!" });
+  }
 
   try {
     if (order.Billing.BillingType.autoPaid) {
@@ -641,7 +670,10 @@ exports.finishOrder = async (req, res) => {
       });
       courierTransactionBill.setUser(user);
       courierTransactionBill.setBilling(billing);
-      await Envelope.increment({ balance: Number(toEnvelope) }, { where: { id: envelope.id }});
+      await Envelope.increment(
+        { balance: Number(toEnvelope) },
+        { where: { id: envelope.id } }
+      );
       if (order.Billing.BillingType.payToCust) {
         // recipient pay the item value
         const courierTransactionItemValue = await CourierTransaction.create({
@@ -672,6 +704,16 @@ exports.finishOrder = async (req, res) => {
       { balance: Number(courierEarning) },
       { where: { id: wallet.id } }
     );
+
+    // create tracking
+    const tracking = await Tracking.create({
+      description: req.body.description,
+    });
+    tracking.setOrder(order);
+    tracking.setUser(user);
+    tracking.setCode(codeAttribute.Code);
+
+    await Order.update({ finished: true }, { where: { id: order.id } });
   } catch (err) {
     return res.status(500).send();
   }

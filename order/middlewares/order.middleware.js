@@ -1,5 +1,12 @@
-const { Post, Tracking, Billing, Envelope, Wallet } = require("../../common/models/main.model");
+const {
+  Post,
+  Tracking,
+  Billing,
+  Envelope,
+  Wallet,
+} = require("../../common/models/main.model");
 const { Village } = require("../../common/models/region.model");
+const { Op } = require("sequelize");
 
 exports.postChecking = async (req, res, next) => {
   let originId = req.body.senderOriginId;
@@ -56,15 +63,33 @@ exports.postChecking = async (req, res, next) => {
 };
 
 exports.checkIfOrderHasAlreadyHadSameTrackingCode = async (req, res, next) => {
+  let wherePost = {};
+  let errorPost = "";
+  if (!req.body.postId) {
+    wherePost = {
+      postId: {
+        [Op.is]: null,
+      },
+    };
+  } else {
+    wherePost = {
+      postId: req.body.postId,
+    };
+    errorPost = " to PostId " + wherePost.postId;
+  }
   const track = await Tracking.findOne({
-    where: { orderId: req.params.orderId, codeId: req.body.codeId },
+    where: {
+      orderId: req.params.orderId,
+      codeId: req.body.codeId,
+      ...wherePost,
+    },
   });
   if (track === null) {
     return next();
   } else {
     return res.status(403).send({
       status: false,
-      message: "Order has already had Code " + req.body.codeId,
+      message: "Order has already had Code " + req.body.codeId + errorPost,
     });
   }
 };
@@ -82,13 +107,15 @@ exports.orderIsPaid = async (req, res, next) => {
 };
 
 exports.checkEnvelopeAndWalletUser = async (req, res, next) => {
-  const envelope = await Envelope.findOne({ where: { UserId: req.jwt.userId }});
+  const envelope = await Envelope.findOne({
+    where: { UserId: req.jwt.userId },
+  });
   if (envelope === null) {
-    return res.status(404).send({ success: false, error: "Envelope Null"});
-  }  
-  const wallet = await Wallet.findOne({ where: { UserId: req.jwt.userId }});
+    return res.status(404).send({ success: false, error: "Envelope Null" });
+  }
+  const wallet = await Wallet.findOne({ where: { UserId: req.jwt.userId } });
   if (wallet === null) {
-    return res.status(404).send({ success: false, error: "Wallet Null"});
+    return res.status(404).send({ success: false, error: "Wallet Null" });
   }
   return next();
-}
+};

@@ -494,9 +494,9 @@ const CourierTransaction = db.define("CourierTransaction", {
     allowNull: false,
   },
   type: {
-    type: DataTypes.ENUM("O_P", "B_F", "P_C", "P_S"),
+    type: DataTypes.ENUM("O_P", "P_C", "P_S", "D_I", "D_O", "W_W"),
     comment:
-      "O_P: Order Payment; B_F: Balance Filling; P_C: Payment Company; P_S: Payment Self",
+      "O_P: Order Payment; P_C: Payment Company; P_S: Payment Self; D_I: Deposit In; D_O: Deposit Out; W_W: Wallet Withdrawal",
     allowNull: false,
   },
   transaction: {
@@ -573,6 +573,13 @@ const prices = async (
   return out;
 };
 
+const AdminTransaction = db.define("AdminTransaction", {});
+
+User.hasMany(AdminTransaction);
+AdminTransaction.belongsTo(User);
+CourierTransaction.hasOne(AdminTransaction);
+AdminTransaction.belongsTo(CourierTransaction);
+
 exports.User = User;
 exports.Order = Order;
 exports.Billing = Billing;
@@ -592,4 +599,5 @@ exports.Room = Room;
 exports.Type = Type;
 exports.CourierTransaction = CourierTransaction;
 exports.BillingType = BillingType;
+exports.AdminTransaction = AdminTransaction;
 exports.prices = prices;

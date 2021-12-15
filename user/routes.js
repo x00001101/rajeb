@@ -58,6 +58,20 @@ exports.routesConfig = (app) => {
   //get id
   app.get("/usersData", [
     ValidationMiddleware.validJWTNeeded,
-    UserController.getDataFromJWT
+    UserController.getDataFromJWT,
+  ]);
+
+  // add balance
+  app.patch("/envelopes/deposite/:userId", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.minimumPermissionLevelRequired(ADMIN),
+    UserController.depositeEnvelope,
+  ]);
+
+  // withdrawal
+  app.patch("/wallets/withdrawal/:userId", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.minimumPermissionLevelRequired(ADMIN),
+    UserController.walletWithdrawal,
   ]);
 };
