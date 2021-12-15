@@ -611,10 +611,11 @@ exports.finishOrder = async (req, res) => {
     }
   } else {
     // add percentage to wallet
-    await Wallet.increment(
-      { balance: Number(courierEarning) },
-      { where: { id: wallet.id } }
-    );
   }
+  // add courier earning to wallet
+  await Wallet.increment(
+    { balance: Number(courierEarning) },
+    { where: { id: wallet.id } }
+  );
   res.send(order);
 };
