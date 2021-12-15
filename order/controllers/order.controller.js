@@ -460,18 +460,40 @@ exports.confirmPayment = async (req, res) => {
         [Op.not]: null,
       },
     },
-    include: Order,
-    include: BillingType,
+    include: [
+      {
+        model: BillingType,
+      },
+      {
+        model: Order,
+      },
+    ],
   });
   if (billing === null) {
     return res
       .status(403)
       .send({ success: false, error: "Billing is not set!" });
   }
+  if (billing.confirmed) {
+    return res
+      .status(403)
+      .send({ success: false, error: "Billing is already confirmed" });
+  }
   if (billing.paid && !billing.BillingType.autoPaid) {
     return res
       .status(403)
       .send({ success: false, error: "Billing is already paid" });
+  }
+  if (billing.paid && billing.BillingType.autoPaid) {
+    // check if envelope balance is available
+    const envelopeBalance = envelope.balance;
+    const totalAmount = billing.totalAmount;
+    const availableBalance = Number(envelopeBalance) - Number(totalAmount);
+    if (Number(availableBalance) < 0 && req.body.fromEnvelope) {
+      return res
+        .status(403)
+        .send({ success: false, error: "Insuficient balance!"});
+    }
   }
   // count money
   const total = billing.totalAmount;
@@ -480,13 +502,11 @@ exports.confirmPayment = async (req, res) => {
   const courierPercentage = setting.courierPercentage;
   const courierPercentagePlus = setting.courierPercentageBonus;
 
-  const percent = 100 - Number(courierPercentage);
-  const toEnvelope = (Number(total) * Number(percent)) / 100;
   const toWallet = (Number(service) * Number(courierPercentage)) / 100;
+  const toEnvelope = Number(total) - Number(toWallet);
 
-  const percentPlus = 100 - Number(courierPercentagePlus);
-  const toEnvelopePlus = (Number(total) * Number(percentPlus)) / 100;
   const toWalletPlus = (Number(service) * Number(courierPercentagePlus)) / 100;
+  const toEnvelopePlus = Number(total) - Number(toWalletPlus);
 
   // transfer money to user envelope and wallet
   // create transaction history
@@ -499,6 +519,7 @@ exports.confirmPayment = async (req, res) => {
         transaction: "E",
       });
       ctEnvelope.setUser(user);
+      ctEnvelope.setBilling(billing);
       const ctWallet = await CourierTransaction.create({
         amount: Number(toWallet),
         mutation: "IN",
@@ -506,6 +527,7 @@ exports.confirmPayment = async (req, res) => {
         transaction: "W",
       });
       ctWallet.setUser(user);
+      ctWallet.setBilling(billing);
 
       // set courier transaction
 
@@ -535,7 +557,7 @@ exports.confirmPayment = async (req, res) => {
             type: "P_C",
             transaction: "E",
           };
-
+          // envelope transsaction out
           await Envelope.increment(
             { balance: Number(billing.Order.itemValue) * -1 },
             { where: { id: envelopeId } }
@@ -553,14 +575,16 @@ exports.confirmPayment = async (req, res) => {
           walletValue = toWalletPlus;
         }
         const ctPtc = await CourierTransaction.create(ctValue);
-        ctPtc.setUser(User);
+        ctPtc.setUser(user);
+        ctPtc.setBilling(billing);
         const ctPtcW = await CourierTransaction.create({
           amount: Number(walletValue),
           mutation: "IN",
           type: "O_P",
           transaction: "W",
         });
-        ctPtcW.setUser(User);
+        ctPtcW.setUser(user);
+        ctPtcW.setBilling(billing);
 
         await Wallet.increment(
           { balance: Number(walletValue) },
@@ -568,6 +592,7 @@ exports.confirmPayment = async (req, res) => {
         );
       }
     }
+    Billing.update({ confirmed: true }, { where: { id: billing.id }})
   } catch (err) {
     console.log(err);
     return res.status(500).send();
@@ -596,26 +621,59 @@ exports.finishOrder = async (req, res) => {
       },
     ],
   });
+  const billing = await Billing.findOne({ where: { id: order.Billing.id }});
   const courierPercentage = setting.courierPercentage;
   const serviceAmount = order.Billing.serviceAmount;
+  const totalAmount = order.Billing.totalAmount;
   const courierEarning =
     (Number(serviceAmount) * Number(courierPercentage)) / 100;
+  const toEnvelope = Number(totalAmount) - Number(courierEarning);
   const itemValue = order.itemValue;
-  if (order.Billing.BillingType.autoPaid) {
-    // customer pay the bill
-    if (order.Billing.BillingType.payToCust) {
-      await Envelope.increment(
-        { balance: Number(itemValue) },
-        { where: { id: envelope.id } }
-      );
+
+  try {
+    if (order.Billing.BillingType.autoPaid) {
+      // recipient pay the bill
+      const courierTransactionBill = await CourierTransaction.create({
+        amount: Number(toEnvelope),
+        mutation: "IN",
+        type: "O_P",
+        transaction: "E",
+      });
+      courierTransactionBill.setUser(user);
+      courierTransactionBill.setBilling(billing);
+      await Envelope.increment({ balance: Number(toEnvelope) }, { where: { id: envelope.id }});
+      if (order.Billing.BillingType.payToCust) {
+        // recipient pay the item value
+        const courierTransactionItemValue = await CourierTransaction.create({
+          amount: Number(order.itemValue),
+          mutation: "IN",
+          type: "O_P",
+          transaction: "E",
+        });
+        courierTransactionItemValue.setUser(user);
+        courierTransactionItemValue.setBilling(billing);
+        await Envelope.increment(
+          { balance: Number(itemValue) },
+          { where: { id: envelope.id } }
+        );
+      }
     }
-  } else {
-    // add percentage to wallet
+    const courierTransactionEarning = await CourierTransaction.create({
+      amount: Number(courierEarning),
+      mutation: "IN",
+      type: "O_P",
+      transaction: "W",
+    });
+    courierTransactionEarning.setUser(user);
+    courierTransactionEarning.setBilling(billing);
+
+    // add courier earning to wallet
+    await Wallet.increment(
+      { balance: Number(courierEarning) },
+      { where: { id: wallet.id } }
+    );
+  } catch (err) {
+    return res.status(500).send();
   }
-  // add courier earning to wallet
-  await Wallet.increment(
-    { balance: Number(courierEarning) },
-    { where: { id: wallet.id } }
-  );
-  res.send(order);
+  res.send();
 };

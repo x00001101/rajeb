@@ -167,6 +167,10 @@ const Billing = db.define(
     serviceAmount: DataTypes.DECIMAL(10, 2),
     totalAmount: DataTypes.DECIMAL(10, 2),
     paid: DataTypes.BOOLEAN,
+    confirmed: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
   },
   {
     indexes: [
@@ -504,6 +508,8 @@ const CourierTransaction = db.define("CourierTransaction", {
 
 User.hasMany(CourierTransaction);
 CourierTransaction.belongsTo(User);
+Billing.hasMany(CourierTransaction);
+CourierTransaction.belongsTo(Billing);
 
 const BillingType = db.define("BillingType", {
   id: {
