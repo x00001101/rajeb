@@ -65,7 +65,7 @@ exports.routesConfig = (app) => {
     CodeController.deleteType,
   ]);
 
-  app.post("/types", [
+  app.get("/types", [
     ValidationMiddleware.validJWTNeeded,
     PermissionMiddleware.minimumPermissionLevelRequired(ADMIN),
     CodeController.getAllTypes,
