@@ -12,3 +12,9 @@ exports.createBillingType = (req, res) => {
     })
     .catch((err) => res.status(500).send());
 };
+
+exports.getAllBillingTypes = (req, res) => {
+  BillingType.findAll()
+    .then((data) => res.send(data))
+    .catch((err) => res.status(500).send());
+};

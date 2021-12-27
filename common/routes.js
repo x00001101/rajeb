@@ -76,4 +76,6 @@ exports.routesConfig = (app) => {
     PermissionMiddleware.minimumPermissionLevelRequired(SUPER_USER),
     BillingController.createBillingType,
   ]);
+
+  app.get("/billingTypes", [BillingController.getAllBillingTypes]);
 };
