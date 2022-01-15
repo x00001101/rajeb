@@ -17,17 +17,27 @@ exports.sendEmail = (fields) => {
     contentHtml = "copy this link and paste it on browser: " + fields.url;
   }
 
+  // let transporter = nodemailer.createTransport({
+  //   host: "smtp.gmail.com",
+  //   port: 465,
+  //   secure: true,
+  //   auth: {
+  //     type: "OAuth2",
+  //     user: process.env.EMAIL_USERNAME,
+  //     clientId: process.env.CLIENT_ID,
+  //     clientSecret: process.env.CLIENT_SECRET,
+  //     refreshToken: process.env.REFRESH_TOKEN,
+  //     accessToken: process.env.ACCESS_TOKEN,
+  //   },
+  // });
+
   let transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
+    host: process.env.HOST_SMTP,
+    port: process.env.PORT_SMTP,
     secure: true,
     auth: {
-      type: "OAuth2",
-      user: process.env.EMAIL_USERNAME,
-      clientId: process.env.CLIENT_ID,
-      clientSecret: process.env.CLIENT_SECRET,
-      refreshToken: process.env.REFRESH_TOKEN,
-      accessToken: process.env.ACCESS_TOKEN,
+      user: process.env.EMAIL_SMTP,
+      pass: process.env.PASSWORD_SMTP,
     },
   });
 
