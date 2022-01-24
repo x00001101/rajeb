@@ -580,6 +580,20 @@ AdminTransaction.belongsTo(User);
 CourierTransaction.hasOne(AdminTransaction);
 AdminTransaction.belongsTo(CourierTransaction);
 
+const CourierPost = db.define("CourierPost", {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    allowNull: false,
+    autoIncrement: true,
+  },
+});
+
+Post.hasMany(CourierPost);
+CourierPost.belongsTo(Post);
+User.hasOne(CourierPost);
+CourierPost.belongsTo(User);
+
 exports.User = User;
 exports.Order = Order;
 exports.Billing = Billing;
@@ -601,3 +615,4 @@ exports.CourierTransaction = CourierTransaction;
 exports.BillingType = BillingType;
 exports.AdminTransaction = AdminTransaction;
 exports.prices = prices;
+exports.CourierPost = CourierPost;

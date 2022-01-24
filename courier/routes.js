@@ -31,8 +31,13 @@ exports.routesConfig = (app, socket) => {
 
   app.post("/courier/paycustomer/:orderId", [
     ValidationMiddleware.validJWTNeeded,
-    PermissionMiddleware.onlyAdminAndPermitedPermissionLevelRequired( PERMITED_COURIER
+    PermissionMiddleware.onlyAdminAndPermitedPermissionLevelRequired(
+      PERMITED_COURIER
     ),
-    
-  ])
+  ]);
+
+  app.post("/courier/setPost", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.minimumPermissionLevelRequired("ADMIN"),
+  ]);
 };
