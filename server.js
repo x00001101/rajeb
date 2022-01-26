@@ -79,7 +79,7 @@ let socketServer;
 io.on("connection", (socket) => {
   socket.on("createConnection", async (userId) => {
     // save this userId to database
-    const user = await User.findOne({ where: { id: userId }});
+    const user = await User.findOne({ where: { id: userId } });
     try {
       const room = await Room.create({ id: socket.id });
       room.setUser(user);
@@ -88,8 +88,8 @@ io.on("connection", (socket) => {
     }
   });
   socket.on("disconnect", () => {
-    Room.destroy({ where: { id: socket.id }});
-  })
+    Room.destroy({ where: { id: socket.id } });
+  });
   socketServer = socket;
 });
 

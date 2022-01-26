@@ -13,7 +13,7 @@ const PERMITED_GUEST = Number(GUEST);
 const PERMITED_CUSTOMER = Number(PERMITED_GUEST) + Number(CUSTOMER);
 const PERMITED_COURIER = Number(PERMITED_CUSTOMER) + Number(COURIER);
 
-exports.routesConfig = (app, socket) => {
+exports.routesConfig = (app, socket, io) => {
   //create new order
   app.post("/orders", [
     ValidationMiddleware.validJWTNeededOrNext,
@@ -87,5 +87,5 @@ exports.routesConfig = (app, socket) => {
     OrderController.finishOrder,
   ]);
 
-  app.post("/testkirimsocket", [OrderController.testkirimsocket(socket)]);
+  app.post("/testkirimsocket", [OrderController.testkirimsocket(socket, io)]);
 };
