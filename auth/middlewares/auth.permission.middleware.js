@@ -1,9 +1,19 @@
 const ADMIN_PERMISSION = process.env.ADMIN,
   SUPER_USER_PERMISSION = process.env.SUPER_USER;
 
+const IS_SUPER_USER =
+  parseInt(process.env.GUEST) +
+  parseInt(process.env.CUSTOMER) +
+  parseInt(process.env.COURIER) +
+  parseInt(process.env.ADMIN) +
+  parseInt(process.env.SUPER_USER);
+
 exports.minimumPermissionLevelRequired = (required_permission_level) => {
   return (req, res, next) => {
     let user_permission_level = parseInt(req.jwt.permission_level);
+    if (user_permission_level == IS_SUPER_USER) {
+      return next();
+    }
     if (user_permission_level & required_permission_level) {
       return next();
     } else {
@@ -27,7 +37,10 @@ exports.onlyAdminAndPermitedPermissionLevelRequired = (
     if (user_permission_level === permited_permission_level) {
       return next();
     } else {
-      if (user_permission_level & ADMIN_PERMISSION || user_permission_level & SUPER_USER_PERMISSION) {
+      if (
+        user_permission_level & ADMIN_PERMISSION ||
+        user_permission_level & SUPER_USER_PERMISSION
+      ) {
         return next();
       } else {
         return res.status(403).send({ error: "You are not permited" });

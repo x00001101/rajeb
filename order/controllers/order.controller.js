@@ -31,6 +31,13 @@ const generateBillingId = async () => {
   return billingId === null ? newId : generateBillingId(newId);
 };
 
+exports.testkirimsocket = (socket) => {
+  return (req, res) => {
+    socket.emit("event", { json: "test" });
+    res.send();
+  };
+};
+
 exports.createNewOrder = (socket) => {
   return async (req, res) => {
     output = {};

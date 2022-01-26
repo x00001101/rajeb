@@ -40,4 +40,10 @@ exports.routesConfig = (app, socket) => {
     ValidationMiddleware.validJWTNeeded,
     PermissionMiddleware.minimumPermissionLevelRequired("ADMIN"),
   ]);
+
+  app.get("/couriers", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.minimumPermissionLevelRequired("ADMIN"),
+    CourierController.getAllCourierData,
+  ]);
 };

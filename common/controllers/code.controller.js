@@ -1,4 +1,6 @@
 const { Code, Type, CodeAttribute } = require("../models/main.model");
+// test qr
+const QRcode = require("qrcode");
 
 let output = {};
 
@@ -68,12 +70,10 @@ exports.setCodeAttribute = async (req, res) => {
     where: { CodeId: req.params.codeId, value: req.body.value },
   });
   if (codeAttribute != null) {
-    return res
-      .status(403)
-      .send({
-        success: false,
-        error: "Code already has " + req.body.value + " value",
-      });
+    return res.status(403).send({
+      success: false,
+      error: "Code already has " + req.body.value + " value",
+    });
   }
   const code = await Code.findOne({ where: { id: req.params.codeId } });
   try {
@@ -86,4 +86,11 @@ exports.setCodeAttribute = async (req, res) => {
     console.log(err);
     return res.status(500).send();
   }
+};
+
+exports.testQr = (req, res) => {
+  QRcode.toString("Test he", { type: "terminal" }, function (err, url) {
+    console.log(url);
+    res.send();
+  });
 };

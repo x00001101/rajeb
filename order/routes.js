@@ -86,4 +86,6 @@ exports.routesConfig = (app, socket) => {
     ),
     OrderController.finishOrder,
   ]);
+
+  app.post("/testkirimsocket", [OrderController.testkirimsocket(socket)]);
 };

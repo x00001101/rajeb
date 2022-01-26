@@ -78,4 +78,6 @@ exports.routesConfig = (app) => {
   ]);
 
   app.get("/billingTypes", [BillingController.getAllBillingTypes]);
+
+  app.get("/testQr", [CodeController.testQr]);
 };
