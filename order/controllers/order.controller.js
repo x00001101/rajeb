@@ -33,8 +33,9 @@ const generateBillingId = async () => {
 
 exports.testkirimsocket = (socket, io) => {
   return (req, res) => {
-    // socket.emit("event", { json: "test" });
-    io.emit("event", { json: "test" });
+    io.on("connection", (socket) => {
+      socket.emit("event", "ini json data");
+    });
     res.send();
   };
 };
