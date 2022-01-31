@@ -8,10 +8,9 @@ const PdfPrinter = require("pdfmake");
 const Promise = require("bluebird");
 const path = require("path");
 const fs = require("fs");
-const Barc = require("barc"),
-  barc = new Barc();
 const QRcode = require("qrcode");
 const { Village } = require("../common/models/region.model");
+const bwipjs = require("bwip-js");
 
 const createPdf = async (awb) => {
   // find order id
@@ -32,8 +31,6 @@ const createPdf = async (awb) => {
   const destinationPost = await Post.findOne({
     where: { regionId: order.destination.DistrictId },
   });
-
-  const QR = await QRcode.toDataURL("http://localhost:3600/tracking?id=" + awb);
 
   let date_ob = new Date();
 
@@ -91,9 +88,23 @@ const createPdf = async (awb) => {
       bolditalics: path.join(__dirname, "/fonts", "/SpaceMono-BoldItalic.ttf"),
     },
   };
-  var buf = barc.code128(awb, (width = 400), (height = 100));
+
   var bitmap = fs.readFileSync(path.join("src", "img", "logo.jpeg"));
   var logo = "data:image/jpeg;base64," + Buffer.from(bitmap).toString("base64");
+
+  const QR = await QRcode.toDataURL("http://localhost:3600/tracking?id=" + awb);
+  // barcode
+  let bar = await bwipjs.toBuffer({
+    bcid: "code128",
+    text: awb,
+    scale: 3,
+    height: 10,
+    includetext: true,
+    textxalign: "center",
+  });
+  const barcode =
+    "data:image/png;base64," + Buffer.from(bar).toString("base64");
+
   const printer = new PdfPrinter(font);
   const docDefinition = {
     pageSize: {
@@ -113,7 +124,7 @@ const createPdf = async (awb) => {
       {
         columns: [
           { image: logo, width: 30 },
-          { image: buf, width: 60, height: 15 },
+          { image: barcode, width: 60, height: 15 },
         ],
       },
       {
