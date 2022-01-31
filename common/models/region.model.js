@@ -13,6 +13,11 @@ const Province = db.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    covered: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
   },
   {
     timestamps: false,
@@ -32,6 +37,11 @@ const Regency = db.define(
     name: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    covered: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
     },
   },
   {
@@ -56,6 +66,11 @@ const District = db.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    covered: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
   },
   {
     timestamps: false,
@@ -78,6 +93,11 @@ const Village = db.define(
     name: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    covered: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
     },
   },
   {

@@ -19,7 +19,7 @@ const {
 const { customAlphabet } = require("nanoid/async");
 const CounterModel = require("../../common/models/counter.model");
 const { Village } = require("../../common/models/region.model");
-const { Sequelize, Op } = require("sequelize");
+const { Op } = require("sequelize");
 const nanoid = customAlphabet("0123456789", 12);
 const SettingModel = require("../../common/models/setting.model");
 
@@ -29,15 +29,6 @@ const generateBillingId = async () => {
   const newId = await nanoid();
   const billingId = await Billing.findOne({ where: { id: newId } });
   return billingId === null ? newId : generateBillingId(newId);
-};
-
-exports.testkirimsocket = (socket, io) => {
-  return (req, res) => {
-    io.on("connection", (socket) => {
-      socket.emit("event", "ini json data");
-    });
-    res.send();
-  };
 };
 
 exports.createNewOrder = (socket) => {
@@ -464,6 +455,9 @@ exports.confirmPayment = async (req, res) => {
   if (!req.body.fromEnvelope) {
     req.body.fromEnvelope = false;
   }
+  if (!req.body.payCustomer) {
+    req.body.payCustomer = false;
+  }
   // check if billing is set
   const user = await User.findOne({ where: { id: req.jwt.userId } });
   const wallet = await Wallet.findOne({ where: { UserId: user.id } });
@@ -565,35 +559,39 @@ exports.confirmPayment = async (req, res) => {
       );
     } else {
       if (billing.BillingType.payToCust) {
-        let walletValue;
-        let ctValue = {};
-        if (req.body.fromEnvelope) {
-          ctValue = {
-            amount: Number(billing.Order.itemValue),
-            mutation: "OUT",
-            type: "P_C",
-            transaction: "E",
-          };
-          // envelope transsaction out
-          await Envelope.increment(
-            { balance: Number(billing.Order.itemValue) * -1 },
-            { where: { id: envelopeId } }
-          );
+        let walletValue = 0;
+        if (req.body.payCustomer) {
+          Order.update({ paid: true }, { where: { id: billing.orderId } });
+          let ctValue = {};
+          if (req.body.fromEnvelope) {
+            ctValue = {
+              amount: Number(billing.Order.itemValue),
+              mutation: "OUT",
+              type: "P_C",
+              transaction: "E",
+            };
+            // envelope transsaction out
+            await Envelope.increment(
+              { balance: Number(billing.Order.itemValue) * -1 },
+              { where: { id: envelopeId } }
+            );
 
-          walletValue = toWallet;
-        } else if (!req.body.fromEnvelope) {
-          ctValue = {
-            amount: Number(billing.Order.itemValue),
-            mutation: "OUT",
-            type: "P_S",
-            transaction: "O",
-          };
+            walletValue = toWallet;
+          } else if (!req.body.fromEnvelope) {
+            ctValue = {
+              amount: Number(billing.Order.itemValue),
+              mutation: "OUT",
+              type: "P_S",
+              transaction: "O",
+            };
 
-          walletValue = toWalletPlus;
+            walletValue = toWalletPlus;
+          }
+          const ctPtc = await CourierTransaction.create(ctValue);
+          ctPtc.setUser(user);
+          ctPtc.setBilling(billing);
         }
-        const ctPtc = await CourierTransaction.create(ctValue);
-        ctPtc.setUser(user);
-        ctPtc.setBilling(billing);
+
         const ctPtcW = await CourierTransaction.create({
           amount: Number(walletValue),
           mutation: "IN",

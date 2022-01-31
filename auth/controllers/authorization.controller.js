@@ -1,6 +1,7 @@
 const jwtSecret = process.env.JWT_SECRET,
   jwt = require("jsonwebtoken");
 const crypto = require("crypto");
+const { Room } = require("../../common/models/main.model");
 
 exports.login = (req, res) => {
   try {
@@ -14,13 +15,11 @@ exports.login = (req, res) => {
     let token = jwt.sign(req.body, jwtSecret);
     let b = Buffer.from(hash);
     let refresh_token = b.toString("base64");
-    res
-      .status(201)
-      .send({
-        id: req.body.userId,
-        accessToken: token,
-        refreshToken: refresh_token,
-      });
+    res.status(201).send({
+      id: req.body.userId,
+      accessToken: token,
+      refreshToken: refresh_token,
+    });
   } catch (err) {
     res.status(500).send({ errors: err });
   }
@@ -31,6 +30,16 @@ exports.refresh_token = (req, res) => {
     req.body = req.jwt;
     let token = jwt.sign(req.body, jwtSecret);
     res.status(201).send({ id: token });
+  } catch (err) {
+    res.status(500).send({ errors: err });
+  }
+};
+
+exports.registerDevId = async (req, res) => {
+  try {
+    const devId = req.body.deviceId;
+    await Room.create({ id: devId, UserId: req.jwt.userId });
+    res.send({ success: true });
   } catch (err) {
     res.status(500).send({ errors: err });
   }

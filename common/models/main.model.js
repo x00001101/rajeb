@@ -136,6 +136,11 @@ const Order = db.define(
       allowNull: false,
       defaultValue: false,
     },
+    paid: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
   },
   {
     indexes: [
@@ -461,6 +466,9 @@ const PackingList = db.define(
     updatedAt: false,
   }
 );
+User.hasMany(Packing);
+Packing.belongsTo(User);
+
 Packing.belongsTo(Post, { as: "fromPost" });
 Packing.belongsTo(Post, { as: "toPost" });
 Packing.hasMany(PackingList);
@@ -472,7 +480,7 @@ const Room = db.define(
   "Room",
   {
     id: {
-      type: DataTypes.STRING(40),
+      type: DataTypes.STRING,
       primaryKey: true,
     },
   },
@@ -589,10 +597,44 @@ const CourierPost = db.define("CourierPost", {
   },
 });
 
-Post.hasMany(CourierPost);
-CourierPost.belongsTo(Post);
+Village.hasMany(CourierPost);
+CourierPost.belongsTo(Village);
 User.hasOne(CourierPost);
 CourierPost.belongsTo(User);
+
+const MessageBox = db.define("MessageBox", {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    allowNull: false,
+    autoIncrement: true,
+  },
+  subject: DataTypes.STRING(100),
+  message: DataTypes.STRING,
+  read: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  },
+});
+
+User.hasMany(MessageBox);
+MessageBox.belongsTo(User);
+
+const Contact = db.define("Contact", {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    allowNull: false,
+    autoIncrement: true,
+  },
+  field: DataTypes.JSON,
+});
+
+User.hasMany(Contact);
+Contact.belongsTo(User);
+
+// sync here
 
 exports.User = User;
 exports.Order = Order;
@@ -616,3 +658,5 @@ exports.BillingType = BillingType;
 exports.AdminTransaction = AdminTransaction;
 exports.prices = prices;
 exports.CourierPost = CourierPost;
+exports.MessageBox = MessageBox;
+exports.Contact = Contact;

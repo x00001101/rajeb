@@ -105,3 +105,7 @@ dist
 
 # Github thingy
 p-auth.txt
+
+# pushnotification FCM
+rajeb-push-notification-firebase-adminsdk-ps22k-6fbe93ef08.json
+firebase-config.js

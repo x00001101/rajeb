@@ -4,6 +4,8 @@ const DataValidatorMiddleware = require("../common/middlewares/verify.data.middl
 const ValidationMiddleware = require("../auth/middlewares/auth.validation.middleware");
 const PermissionMiddleware = require("../auth/middlewares/auth.permission.middleware");
 
+const pdfController = require("../pdf/controller");
+
 const ADMIN = process.env.ADMIN;
 const COURIER = process.env.COURIER;
 const CUSTOMER = process.env.CUSTOMER;
@@ -87,5 +89,9 @@ exports.routesConfig = (app, socket, io) => {
     OrderController.finishOrder,
   ]);
 
-  app.post("/testkirimsocket", [OrderController.testkirimsocket(socket, io)]);
+  //pdf Awb
+  app.get("/createPdfAwb", [
+    // ValidationMiddleware.validJWTNeeded,
+    pdfController.createNewPdf,
+  ]);
 };

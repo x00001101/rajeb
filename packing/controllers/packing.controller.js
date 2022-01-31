@@ -7,11 +7,29 @@ const {
   Tracking,
   Post,
 } = require("../../common/models/main.model");
+const { Op, Model } = require("sequelize");
 
 exports.createNewPacking = async (req, res) => {
   // Packing.create()
   //   .then((data) => res.status(201).send({ success: true, ...data.dataValues }))
   //   .catch((err) => res.status(500).send(err));
+  // check if user is already create a packing but unfinished
+  const userPacking = await Packing.findOne({
+    where: {
+      userId: req.jwt.userId,
+      [Op.or]: [{ status: "UNLOCKED" }, { status: "CHECKING" }],
+    },
+  });
+
+  if (userPacking) {
+    return res.status(400).send({
+      success: false,
+      ...userPacking,
+      message:
+        "Could not create new Packing. Unfinished Packing ID " + userPacking.id,
+    });
+  }
+
   // check each postid is it available
   const from = await Post.findOne({ where: { id: req.body.from } });
   if (from === null) {
@@ -21,11 +39,14 @@ exports.createNewPacking = async (req, res) => {
   if (to === null) {
     return res.status(404).send({ error: "Post id 'to' not found!" });
   }
+  const user = await User.findOne({ where: { id: req.jwt.userId } });
+
   // then create the packing id
   try {
     const packing = await Packing.create();
     packing.setFromPost(from);
     packing.setToPost(to);
+    packing.setUser(user);
     res.status(201).send({
       success: true,
       ...packing,
@@ -200,9 +221,14 @@ exports.getPackingList = async (req, res) => {
   if (!req.params.packingId) {
     return res.status(403).send({ error: "Need packing id!" });
   }
-  const packinglist = await PackingList.findAll({
-    where: { PackingId: req.params.packingId },
+  // const packinglist = await PackingList.findAll({
+  //   where: { PackingId: req.params.packingId },
+  // });
+  const packinglist = await Packing.findOne({
+    where: { id: req.params.packingId },
+    include: PackingList,
   });
+
   res.send(packinglist);
 };
 

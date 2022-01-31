@@ -16,12 +16,22 @@ exports.getRegion = async (req, res) => {
   if (req.query.lim) {
     off_lim.limit = Number(req.query.lim);
   }
+  if (req.query.covered == "true") {
+    req.query.covered = 1;
+  } else if (req.query.covered == "false") {
+    req.query.covered = 0;
+  } else {
+    req.query.covered = 0;
+  }
   let id = {}; // parrent id
   let out;
   if (src.length == 1) {
     if (src == "p") {
       if (req.query.pid) {
         id.id = req.query.pid;
+      }
+      if (req.query.covered) {
+        id.covered = req.query.covered;
       }
       out = await Province.findAll({
         ...off_lim,
@@ -35,6 +45,9 @@ exports.getRegion = async (req, res) => {
     } else if (src == "r") {
       if (req.query.pid) {
         id.ProvinceId = req.query.pid;
+      }
+      if (req.query.covered) {
+        id.covered = req.query.covered;
       }
       out = await Regency.findAll({
         ...off_lim,
@@ -55,6 +68,9 @@ exports.getRegion = async (req, res) => {
     } else if (src == "d") {
       if (req.query.pid) {
         id.RegencyId = req.query.pid;
+      }
+      if (req.query.covered) {
+        id.covered = req.query.covered;
       }
       out = await District.findAll({
         ...off_lim,
@@ -82,6 +98,9 @@ exports.getRegion = async (req, res) => {
     } else if (src == "v") {
       if (req.query.pid) {
         id.DistrictId = req.query.pid;
+      }
+      if (req.query.covered) {
+        id.covered = req.query.covered;
       }
       out = await Village.findAll({
         ...off_lim,
@@ -115,7 +134,7 @@ exports.getRegion = async (req, res) => {
       });
     }
   } else {
-    var i = src.length;
+    // var i = src.length;
     let outs = [];
     for (var i = 0; i < src.length; i++) {
       outs.push(src.charAt(i));
