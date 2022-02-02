@@ -20,8 +20,6 @@ exports.getRegion = async (req, res) => {
     req.query.covered = 1;
   } else if (req.query.covered == "false") {
     req.query.covered = 0;
-  } else {
-    req.query.covered = 0;
   }
   let id = {}; // parrent id
   let out;

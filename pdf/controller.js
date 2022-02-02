@@ -6,9 +6,11 @@ exports.createNewPdf = async (req, res, next) => {
   }
   try {
     var binaryResult = await pdfModel.createPdf(req.query.id);
+    if (!binaryResult) {
+      return res.status(404).send({message: "Order Id not found!"});
+    } 
     res.contentType("application/pdf").send(binaryResult);
   } catch (err) {
-    console.log(err);
     res.send(
       "<h2>There was an error displaying the PDF document.</h2> Error message: " +
         err.message

@@ -24,6 +24,10 @@ const createPdf = async (awb) => {
     ],
   });
 
+  if (order === null) {
+    return false;
+  }
+
   const originPost = await Post.findOne({
     where: { regionId: order.origin.DistrictId },
   });

@@ -19,6 +19,13 @@ exports.createNewService = (req, res) => {
 };
 
 exports.getAllServicesData = (req, res) => {
+  let orides = {};
+  if (req.query.ori) {
+    orides.origin = req.query.ori;
+  }
+  if (req.query.des) {
+    orides.destination = req.query.des;
+  }
   Service.findAll()
     .then((data) => res.send(data))
     .catch((err) => res.status(500).send(err));
