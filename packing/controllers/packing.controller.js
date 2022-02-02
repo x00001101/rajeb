@@ -356,3 +356,36 @@ exports.setPackingDone = async (req, res) => {
       res.status(500).send();
     });
 };
+
+exports.getAllPacking = (req, res) => {
+  let offlim = {};
+  if (req.query.off) {
+    offlim.offset = req.query.off;
+  }
+  if (req.query.lim) {
+    offlim.limmit = req.query.lim;
+  }
+
+  Packing.findAll({ where: { userId: req.jwt.userId }, ...offlim })
+    .then((data) => {
+      res.send(data);
+    })
+    .catch((err) => res.status(500).send());
+};
+
+exports.updatePackingPath = async (req, res, next) => {
+  if (!req.body.from || !req.body.from) {
+    return res.status(400).send({ error: "Need body value" });
+  }
+  const from = await Post.findOne({ where: { id: req.body.from } });
+  if (from === null) {
+    return res.status(400).send({ error: "(from) Post id not found!" });
+  }
+  const to = await Post.findOne({ where: { id: req.body.to } });
+  if (to === null) {
+    return res.status(400).send({ error: "(to) Post id not found!" });
+  }
+  Packing.update({ fromPostId: req.body.from, toPostId: req.body.to }, { where: { id: req.params.packingId }})
+    .then((data) => res.send())
+    .catch((err) => res.status(500).send());
+};

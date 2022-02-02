@@ -99,4 +99,18 @@ exports.routesConfig = (app) => {
     PackingMiddleware.packingIsInCheckingMode,
     PackingController.setPackingDone,
   ]);
+
+  // get all data packing
+  app.get("/packings", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.minimumPermissionLevelRequired(COURIER),
+    PackingController.getAllPacking,
+  ]);
+  
+  app.patch("/packings/:packingId/path", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.minimumPermissionLevelRequired(COURIER),
+    PackingMiddleware.packingIsUnLocked,
+    PackingController.updatePackingPath,
+  ]);
 };
