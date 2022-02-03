@@ -1,4 +1,4 @@
-const { Service } = require("../models/main.model");
+const { Service, User } = require("../models/main.model");
 const { Village } = require("../models/region.model");
 
 const output = {};
@@ -100,3 +100,13 @@ exports.dataVerification = (title) => {
     }
   };
 };
+
+exports.userIsNotCustomer = async (req, res, next) => {
+  const userId = req.params.userId;
+  const user = await User.findOne({ where: { id: userId, permissionLevel: '5' }});
+  if (user === null) {
+    return next();
+  } else {
+    return res.status(400).send({ message: "user is customer"});
+  }
+}

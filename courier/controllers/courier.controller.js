@@ -40,5 +40,9 @@ exports.getAllCourierData = (req, res) => {
 };
 
 exports.setPostCourier = (req, res) => {
-  
+  const courierId = req.params.userId;
+
+  const villages = req.body.posts;
+
+  res.send({ length: villages.length });
 }

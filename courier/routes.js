@@ -1,6 +1,7 @@
 const CourierController = require("./controllers/courier.controller");
 const PermissionMiddleware = require("../auth/middlewares/auth.permission.middleware");
 const ValidationMiddleware = require("../auth/middlewares/auth.validation.middleware");
+const VerifyDataMiddleware = require("../common/middlewares/verify.data.middleware")
 
 const ADMIN = process.env.ADMIN;
 const COURIER = process.env.COURIER;
@@ -36,9 +37,11 @@ exports.routesConfig = (app, socket) => {
     ),
   ]);
 
-  app.post("/courier/setPost", [
+  app.post("/courier/setPost/:userId", [
     ValidationMiddleware.validJWTNeeded,
     PermissionMiddleware.minimumPermissionLevelRequired("ADMIN"),
+    VerifyDataMiddleware.userIsNotCustomer,
+    CourierController.setPostCourier,
   ]);
 
   app.get("/couriers", [
