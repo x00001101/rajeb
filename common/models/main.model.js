@@ -634,6 +634,25 @@ const Contact = db.define("Contact", {
 User.hasMany(Contact);
 Contact.belongsTo(User);
 
+const OrderList = db.define("OrderList", {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    allowNull: false,
+    autoIncrement: true,
+  },
+  accepted: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
+  expired: DataTypes.DATE,
+});
+
+Order.hasMany(OrderList, { onDelete: "cascade" });
+OrderList.belongsTo(Order);
+OrderList.belongsTo(User,{ as: "assignedUser" });
+OrderList.belongsTo(User, { as: "acceptedUser" });
+
 // sync here
 
 exports.User = User;
@@ -660,3 +679,4 @@ exports.prices = prices;
 exports.CourierPost = CourierPost;
 exports.MessageBox = MessageBox;
 exports.Contact = Contact;
+exports.OrderList = OrderList;

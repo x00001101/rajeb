@@ -94,4 +94,6 @@ exports.routesConfig = (app, socket, io) => {
     // ValidationMiddleware.validJWTNeeded,
     pdfController.createNewPdf,
   ]);
+
+  app.post("/testAssignedOrder", OrderController.testAssignment);
 };

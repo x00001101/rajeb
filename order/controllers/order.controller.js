@@ -15,6 +15,9 @@ const {
   prices,
   CourierTransaction,
   CodeAttribute,
+  OrderList,
+  CourierPost,
+  MessageBox
 } = require("../../common/models/main.model");
 const { customAlphabet } = require("nanoid/async");
 const CounterModel = require("../../common/models/counter.model");
@@ -254,12 +257,45 @@ exports.createNewOrder = (socket) => {
       output.success = true;
       output.awbNumber = awbNumber;
       output.billingId = billingId;
+
+      sendMessageToAssignedCourier(newOrder, origin);
+
       res.send(output);
     } catch (err) {
       console.log(err);
       res.status(500).send({ error: err });
     }
   };
+};
+
+exports.testAssignment = async (req, res) => {
+  const messageAndAssigned = await sendMessageToAssignedCourier(req.body.order, req.body.village);
+  res.send(messageAndAssigned);
+}
+
+const sendMessageToAssignedCourier = async (order, origin) => {
+  // find courier that assigned to this origin id
+  const courier = await CourierPost.findAll({ where: { VillageId: origin.id }});
+
+  try {
+    for (i in courier) {
+      const c = courier[i];
+      const userId = c.UserId;
+      const user = await User.findOne({ where: { id: userId }});
+      const orderList = await OrderList.create();
+      orderList.setOrder(order);
+      orderList.setAssignedUser(user);
+
+      const messageBox = await MessageBox.create({
+        subject: "Order baru telah dibuat!",
+        message: `${order.id} siap di Pick Up silahkan menuju ke alamat ${order.senderAddress} atau menghubungi ${order.senderPhoneNumber} atas nama ${order.senderFullName}`,
+      });
+      messageBox.setUser(user);
+
+    }
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 exports.patchOrder = async (req, res) => {

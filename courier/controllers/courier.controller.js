@@ -1,4 +1,5 @@
-const { Tracking, User } = require("../../common/models/main.model");
+const { Tracking, User, CourierPost } = require("../../common/models/main.model");
+const { Village } = require("../../common/models/region.model");
 const { Op } = require("sequelize");
 
 exports.courierPage = (socket) => {
@@ -39,10 +40,45 @@ exports.getAllCourierData = (req, res) => {
     .catch((err) => res.status(500).send());
 };
 
-exports.setPostCourier = (req, res) => {
+exports.setPostCourier = async (req, res, next) => {
   const courierId = req.params.userId;
 
-  const villages = req.body.posts;
+  const courier = await User.findOne({ where: { id: courierId }});
+  if (courier === null) {
+    return res.status(404).send({ error: "User is not found!"});
+  }
 
-  res.send({ length: villages.length });
+  const villages = req.body.posts;
+  const array = Array.isArray(villages);
+  if (!array) {
+    return res.status(400).send({ error: "Posts must be an array!"});
+  }
+
+  let posts = {};
+  
+  for (i in villages){
+    const village = await Village.findOne({ where: { id: villages[i] }});
+    if (village === null) {
+      return res.status(400).send({ posts_index: i, error: "Village id not found: " + villages[i]});
+      break;
+    }
+    posts[i] = village;
+  }
+
+  try {
+    for (post in posts) {
+      const village = posts[post];
+      // find if user is already assigned in village
+      const courierAssigned = await CourierPost.findOne({ where: { UserId: courier.id, VillageId: village.id }});
+      if (courierAssigned === null) {        
+        const courierPosts = await CourierPost.create();
+        courierPosts.setUser(courier);
+        courierPosts.setVillage(village);
+      }
+    }
+  } catch (err) {
+    next(err);
+  }
+
+  res.send({courierId: courier.id, ...posts});
 }
