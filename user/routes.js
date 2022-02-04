@@ -74,4 +74,16 @@ exports.routesConfig = (app) => {
     PermissionMiddleware.minimumPermissionLevelRequired(ADMIN),
     UserController.walletWithdrawal,
   ]);
+
+  app.get("/messages/:userId", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.onlySameUserOrAdminCanDoThisAction,
+    UserController.getMessages,
+  ]);
+
+  app.patch("/messages/:userId/:messageId", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.onlySameUserOrAdminCanDoThisAction,
+    UserController.setMessageToRead,
+  ]);
 };

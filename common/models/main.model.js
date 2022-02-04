@@ -650,7 +650,7 @@ const OrderList = db.define("OrderList", {
 
 Order.hasMany(OrderList, { onDelete: "cascade" });
 OrderList.belongsTo(Order);
-OrderList.belongsTo(User,{ as: "assignedUser" });
+OrderList.belongsTo(User, { as: "assignedUser" });
 OrderList.belongsTo(User, { as: "acceptedUser" });
 
 // sync here

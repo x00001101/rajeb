@@ -7,6 +7,7 @@ const Envelope = models.Envelope;
 const crypto = require("crypto");
 const CourierTransaction = models.CourierTransaction;
 const AdminTransaction = models.AdminTransaction;
+const MessageBox = models.MessageBox;
 const jwtSecret = process.env.JWT_SECRET,
   jwt = require("jsonwebtoken");
 const EmailModel = require("../../email/models/email.model");
@@ -418,4 +419,26 @@ exports.walletWithdrawal = async (req, res) => {
     return res.status(500).send();
   }
   res.send();
+};
+
+exports.getMessages = (req, res) => {
+  let read = {};
+  var rd = req.query.rd || "all";
+  if (rd === "true") {
+    read.read = true;
+  } else if (rd === "false") {
+    read.read = false;
+  }
+  MessageBox.findAll({ where: { UserId: req.params.userId, ...read } })
+    .then((data) => res.send(data))
+    .catch((err) => res.status(500).send(err));
+};
+
+exports.setMessageToRead = (req, res) => {
+  MessageBox.update(
+    { read: true },
+    { where: { UserId: req.params.userId, id: req.params.messageId } }
+  )
+    .then((data) => res.send(data))
+    .catch((err) => res.status(500).send(err));
 };

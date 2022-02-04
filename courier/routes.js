@@ -1,7 +1,9 @@
 const CourierController = require("./controllers/courier.controller");
 const PermissionMiddleware = require("../auth/middlewares/auth.permission.middleware");
 const ValidationMiddleware = require("../auth/middlewares/auth.validation.middleware");
-const VerifyDataMiddleware = require("../common/middlewares/verify.data.middleware")
+const VerifyDataMiddleware = require("../common/middlewares/verify.data.middleware");
+
+const CourierMiddleware = require("./middlewares/courier.middleware");
 
 const ADMIN = process.env.ADMIN;
 const COURIER = process.env.COURIER;
@@ -48,5 +50,18 @@ exports.routesConfig = (app, socket) => {
     ValidationMiddleware.validJWTNeeded,
     PermissionMiddleware.minimumPermissionLevelRequired("ADMIN"),
     CourierController.getAllCourierData,
+  ]);
+
+  app.get("/orderList/:userId", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.onlySameUserOrAdminCanDoThisAction,
+    CourierController.getOrderList,
+  ]);
+
+  app.patch("/orderList/:userId/:orderId", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.onlySameUserOrAdminCanDoThisAction,
+    CourierMiddleware.checkIfOrderListIsNotAccepted,
+    CourierController.acceptOrderList,
   ]);
 };
