@@ -110,8 +110,9 @@ exports.getOrderList = (req, res) => {
 };
 
 exports.acceptOrderList = (req, res) => {
+  const accept = req.body.accept;
   OrderList.update(
-    { accepted: true, acceptedUserId: req.params.userId },
+    { accepted: accept, acceptedUserId: req.params.userId },
     { where: { OrderId: req.params.orderId } }
   )
     .then((data) => res.send(data))

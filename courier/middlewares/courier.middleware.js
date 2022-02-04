@@ -9,10 +9,20 @@ exports.checkIfOrderListIsNotAccepted = async (req, res, next) => {
     },
   });
   if (orderList === null) {
-    return next();
+    if (req.body.accept) {
+      return next();
+    } else {
+      return res.status(400).send({
+        message: `Order is not accepted yet!`,
+      });
+    }
   } else {
-    return res.status(400).send({
-      message: `Order is already accepted by User: ${orderList.acceptedUserId} at ${orderList.updatedAt}`,
-    });
+    if (req.body.accept) {
+      return res.status(400).send({
+        message: `Order is already accepted by User: ${orderList.acceptedUserId} at ${orderList.updatedAt}`,
+      });
+    } else {
+      return next();
+    }
   }
 };
