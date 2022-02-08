@@ -25,6 +25,7 @@ const { Village } = require("../../common/models/region.model");
 const { Op } = require("sequelize");
 const nanoid = customAlphabet("0123456789", 12);
 const SettingModel = require("../../common/models/setting.model");
+const errors = require("bluebird/js/release/errors");
 
 let output = {};
 
@@ -32,6 +33,12 @@ const generateBillingId = async () => {
   const newId = await nanoid();
   const billingId = await Billing.findOne({ where: { id: newId } });
   return billingId === null ? newId : generateBillingId(newId);
+};
+
+exports.getAllOrder = (req, res) => {
+  Order.findAll({ order: [["updatedAt", "DESC"]] })
+    .then((data) => res.send(data))
+    .catch((err) => res.status(500).send(err));
 };
 
 exports.createNewOrder = (socket) => {
@@ -473,7 +480,8 @@ exports.getOrderDetail = (req, res) => {
   if (!req.params.orderId) {
     return res.status(403).send({ success: false, error: "Need order id!" });
   }
-  Order.findOne({ where: { id: req.params.orderId },
+  Order.findOne({
+    where: { id: req.params.orderId },
     include: [
       {
         model: Billing,

@@ -58,6 +58,12 @@ exports.routesConfig = (app, socket, io) => {
     OrderController.getOrderDetail,
   ]);
 
+  app.get("/orders", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.minimumPermissionLevelRequired(ADMIN),
+    OrderController.getAllOrder,
+  ]);
+
   app.get("/tracking", [OrderController.trackOrder]);
 
   app.delete("/orders/:orderId", [OrderController.deleteOrder]);
