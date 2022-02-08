@@ -21,7 +21,12 @@ const {
 } = require("../../common/models/main.model");
 const { customAlphabet } = require("nanoid/async");
 const CounterModel = require("../../common/models/counter.model");
-const { Village } = require("../../common/models/region.model");
+const {
+  Village,
+  District,
+  Regency,
+  Province,
+} = require("../../common/models/region.model");
 const { Op } = require("sequelize");
 const nanoid = customAlphabet("0123456789", 12);
 const SettingModel = require("../../common/models/setting.model");
@@ -36,9 +41,27 @@ const generateBillingId = async () => {
 };
 
 exports.getAllOrder = (req, res) => {
-  Order.findAll({ order: [["updatedAt", "DESC"]] })
+  Order.findAll({
+    // order: [["updatedAt", "DESC"]],
+    include: {
+      model: Village,
+      as: "origin",
+      include: {
+        model: District,
+        include: {
+          model: Regency,
+          include: {
+            model: Province,
+          },
+        },
+      },
+    },
+  })
     .then((data) => res.send(data))
-    .catch((err) => res.status(500).send(err));
+    .catch((err) => {
+      console.log(err);
+      res.status(500).send(err);
+    });
 };
 
 exports.createNewOrder = (socket) => {
