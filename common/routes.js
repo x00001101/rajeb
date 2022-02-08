@@ -80,4 +80,6 @@ exports.routesConfig = (app) => {
   app.get("/billingTypes", [BillingController.getAllBillingTypes]);
 
   app.get("/testQr", [CodeController.testQr]);
+
+  app.get("/regionName", [RegionController.getRegionName]);
 };

@@ -599,7 +599,7 @@ const CourierPost = db.define("CourierPost", {
 
 Village.hasMany(CourierPost);
 CourierPost.belongsTo(Village);
-User.hasOne(CourierPost);
+User.hasMany(CourierPost);
 CourierPost.belongsTo(User);
 
 const MessageBox = db.define("MessageBox", {

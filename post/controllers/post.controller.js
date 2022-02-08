@@ -39,7 +39,21 @@ exports.createNew = async (req, res) => {
 };
 
 exports.findAllPosts = (req, res) => {
-  Post.findAll()
+  Post.findAll({ 
+    include: {
+      model: District,
+      as: "region",
+      attributes: ["name"],
+      include: {
+        model: Regency,
+        attributes: ["name"],
+        include: {
+          model: Province,
+          attributes: ["name"],
+        },
+      },
+    },
+  })
     .then((data) => res.send(data))
     .catch((err) => res.status(500).send(err));
 };

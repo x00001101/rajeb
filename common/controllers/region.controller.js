@@ -3,6 +3,7 @@ const {
   Regency,
   District,
   Village,
+  Region,
 } = require("../models/region.model");
 const { Op } = require("sequelize");
 
@@ -141,3 +142,9 @@ exports.getRegion = async (req, res) => {
   }
   return res.send(out);
 };
+
+exports.getRegionName = async (req, res) => {
+  const regionId = req.query.id;
+  const data = await Region.getFullRegionName(regionId);
+  res.send(data);
+}

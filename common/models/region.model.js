@@ -112,7 +112,7 @@ Village.belongsTo(District);
 
 const Region = {
   getFullRegionName: async (regionId) => {
-    const data = await Village.findOne({
+    const dataV = await Village.findOne({
       where: { id: regionId },
       include: [
         {
@@ -137,6 +137,42 @@ const Region = {
       ],
       attributes: ["name"],
     });
+    const dataD = await District.findOne({
+      where: { id: regionId },
+      include: [
+        {
+          model: Regency,
+          required: true,
+          attributes: ["name"],
+          include: [
+            {
+              model: Province,
+              required: true,
+              attributes: ["name"],
+            }
+          ]
+        }
+      ],
+      attributes: ["name"],
+    });
+    const dataR = await Regency.findOne({
+      where: { id: regionId },
+      include: [
+        {
+          model: Province,
+          required: true,
+          attributes: ["name"],
+        }
+      ],
+      attributes: ["name"],
+    });
+    const dataP = await Province.findOne({
+      where: { id: regionId },
+      attributes: ["name"],
+    })
+
+    const data = dataV || dataD || dataR || dataP;
+
     return data;
   },
 };

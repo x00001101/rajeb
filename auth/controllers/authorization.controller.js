@@ -38,8 +38,16 @@ exports.refresh_token = (req, res) => {
 exports.registerDevId = async (req, res) => {
   try {
     const devId = req.body.deviceId;
-    await Room.create({ id: devId, UserId: req.jwt.userId });
-    res.send({ success: true });
+    if (devId.length > 255) {
+        return res.status(400).send({ success: false, error: "id length > 255"});
+    }
+    const findId = await Room.findOne({ where: { id: devId }});
+    if (findId === null) {
+        await Room.create({ id: devId, UserId: req.jwt.userId });
+        return res.send({ success: true });
+    } else {
+        return res.status(400).send({ success: false, error: "Registered ID"});
+    }
   } catch (err) {
     res.status(500).send({ errors: err });
   }

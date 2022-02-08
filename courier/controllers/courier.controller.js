@@ -37,9 +37,10 @@ exports.getAllCourierData = (req, res) => {
 
   const ATTRIBUTES = ["id", "fullName", "phoneNumber", "email"];
   User.findAll({
-    where: { permissionLevel: "5", ...param },
+    where: { permissionLevel: "15", ...param },
     ...offlim,
     attributes: ATTRIBUTES,
+    include: CourierPost
   })
     .then((data) => res.send(data))
     .catch((err) => res.status(500).send());

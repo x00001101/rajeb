@@ -1,12 +1,22 @@
 require("dotenv").config();
 const express = require("express");
 const { createServer } = require("http");
+
+const fs = require("fs");
+var https = require('https');
+var privateKey  = fs.readFileSync('sslcert/server.key', 'utf8');
+var certificate = fs.readFileSync('sslcert/server.crt', 'utf8');
+
+var credentials = {key: privateKey, cert: certificate};
+
 const { Server } = require("socket.io");
 const bodyParser = require("body-parser");
 const { User, Room } = require("./common/models/main.model");
 
 const app = express();
 const httpServer = createServer(app);
+
+var httpsServer = https.createServer(credentials, app);
 
 const UserRoutes = require("./user/routes");
 const AuthRoutes = require("./auth/routes");
@@ -41,8 +51,9 @@ for (const name of Object.keys(nets)) {
 const PORT = process.env.PORT || 3000;
 httpServer.listen(PORT, () => {
   // console.log("App is listening at http://" + results["eth0"][0] + ":" + PORT);
-  console.log("App is listening at http://localhost:" + PORT);
+//   console.log("App is listening at http://localhost:" + PORT);
 });
+// httpsServer.listen(8080);
 
 const io = new Server(httpServer, {
   path: "/socket.io",

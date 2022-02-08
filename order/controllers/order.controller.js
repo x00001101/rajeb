@@ -473,7 +473,16 @@ exports.getOrderDetail = (req, res) => {
   if (!req.params.orderId) {
     return res.status(403).send({ success: false, error: "Need order id!" });
   }
-  Order.findOne({ where: { id: req.params.orderId }, include: Billing })
+  Order.findOne({ where: { id: req.params.orderId },
+    include: [
+      {
+        model: Billing,
+      },
+      {
+        model: Tracking,
+      },
+    ],
+  })
     .then((data) => {
       res.send(data);
     })
