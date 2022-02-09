@@ -499,25 +499,35 @@ exports.setBillingPaymentMethod = async (req, res) => {
   }
 };
 
-exports.getOrderDetail = (req, res) => {
+exports.getOrderDetail = async (req, res) => {
   if (!req.params.orderId) {
     return res.status(403).send({ success: false, error: "Need order id!" });
   }
-  Order.findOne({
+  const orderData = await Order.findOne({
     where: { id: req.params.orderId },
     include: [
-      {
-        model: Billing,
-      },
-      {
-        model: Tracking,
-      },
+      { model: Service },
+      { model: Billing },
+      { model: Village, as: "origin" },
+      { model: Village, as: "destination" },
     ],
-  })
-    .then((data) => {
-      res.send(data);
-    })
-    .catch((err) => res.status(500).send());
+  });
+  if (orderData === null) {
+    return res.send({ message: "Id not found!" });
+  }
+  const originPost = await Post.findOne({
+    where: { regionId: orderData.origin.DistrictId },
+  });
+
+  const destinationPost = await Post.findOne({
+    where: { regionId: orderData.destination.DistrictId },
+  });
+
+  return res.send({
+    order: orderData,
+    origin: originPost,
+    destination: destinationPost,
+  });
 };
 
 exports.confirmPayment = async (req, res) => {
