@@ -11,6 +11,7 @@ const MessageBox = models.MessageBox;
 const jwtSecret = process.env.JWT_SECRET,
   jwt = require("jsonwebtoken");
 const EmailModel = require("../../email/models/email.model");
+const { off } = require("process");
 
 const COURIER = process.env.COURIER;
 
@@ -429,7 +430,18 @@ exports.getMessages = (req, res) => {
   } else if (rd === "false") {
     read.read = false;
   }
-  MessageBox.findAll({ where: { UserId: req.params.userId, ...read } })
+  let off_lim = {}; // set offset limit
+  if (req.query.off) {
+    off_lim.offset = Number(req.query.off);
+  }
+  if (req.query.lim) {
+    off_lim.limit = Number(req.query.lim);
+  }
+  MessageBox.findAll({
+    ...off_lim,
+    order: [["createdAt", "DESC"]],
+    where: { UserId: req.params.userId, ...read },
+  })
     .then((data) => res.send(data))
     .catch((err) => res.status(500).send(err));
 };

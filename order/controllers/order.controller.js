@@ -18,6 +18,7 @@ const {
   OrderList,
   CourierPost,
   MessageBox,
+  sendNotification,
 } = require("../../common/models/main.model");
 const { customAlphabet } = require("nanoid/async");
 const CounterModel = require("../../common/models/counter.model");
@@ -42,20 +43,37 @@ const generateBillingId = async () => {
 
 exports.getAllOrder = (req, res) => {
   Order.findAll({
-    // order: [["updatedAt", "DESC"]],
-    include: {
-      model: Village,
-      as: "origin",
-      include: {
-        model: District,
+    order: [["updatedAt", "DESC"]],
+    include: [
+      { model: Service },
+      { model: Billing },
+      {
+        model: Village,
+        as: "origin",
         include: {
-          model: Regency,
+          model: District,
           include: {
-            model: Province,
+            model: Regency,
+            include: {
+              model: Province,
+            },
           },
         },
       },
-    },
+      {
+        model: Village,
+        as: "destination",
+        include: {
+          model: District,
+          include: {
+            model: Regency,
+            include: {
+              model: Province,
+            },
+          },
+        },
+      },
+    ],
   })
     .then((data) => res.send(data))
     .catch((err) => {
@@ -318,6 +336,8 @@ const sendMessageToAssignedCourier = async (order, origin) => {
         message: `${order.id} siap di Pick Up silahkan menuju ke alamat ${order.senderAddress} atau menghubungi ${order.senderPhoneNumber} atas nama ${order.senderFullName}`,
       });
       messageBox.setUser(user);
+
+      sendNotification(userId, messageBox.subject, messageBox.message);
     }
   } catch (err) {
     console.log(err);
@@ -803,6 +823,8 @@ exports.finishOrder = async (req, res) => {
     tracking.setCode(codeAttribute.Code);
 
     await Order.update({ finished: true }, { where: { id: order.id } });
+    // delete orderList
+    OrderList.destroy({ where: { OrderId: order.id } });
   } catch (err) {
     return res.status(500).send();
   }

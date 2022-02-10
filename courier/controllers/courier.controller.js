@@ -40,7 +40,7 @@ exports.getAllCourierData = (req, res) => {
     where: { permissionLevel: "15", ...param },
     ...offlim,
     attributes: ATTRIBUTES,
-    include: CourierPost
+    include: CourierPost,
   })
     .then((data) => res.send(data))
     .catch((err) => res.status(500).send());
@@ -102,8 +102,17 @@ exports.getOrderList = (req, res) => {
   } else if (acc === "false") {
     accepted.accepted = false;
   }
+  let off_lim = {}; // set offset limit
+  if (req.query.off) {
+    off_lim.offset = Number(req.query.off);
+  }
+  if (req.query.lim) {
+    off_lim.limit = Number(req.query.lim);
+  }
 
   OrderList.findAll({
+    ...off_lim,
+    order: [["createdAt", "DESC"]],
     where: { assignedUserId: req.params.userId, ...accepted },
   })
     .then((data) => res.send(data))

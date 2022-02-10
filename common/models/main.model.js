@@ -2,6 +2,7 @@ const db = require("../config/database");
 const { DataTypes } = require("sequelize");
 const { Village, District } = require("./region.model");
 const SettingModel = require("./setting.model");
+const { admin } = require("../../firebase-config");
 
 const User = db.define(
   "User",
@@ -653,6 +654,31 @@ OrderList.belongsTo(Order);
 OrderList.belongsTo(User, { as: "assignedUser" });
 OrderList.belongsTo(User, { as: "acceptedUser" });
 
+const sendNotification = async (userId, title, messageBody) => {
+  const notification_options = {
+    priority: "high",
+    timeToLive: 60 * 60 * 24,
+  };
+  // get token
+  const room = await Room.findAll({ where: { UserId: userId } });
+  let out = [];
+  for (var i = 0; i < room.length; i++) {
+    const options = notification_options;
+    const registrationToken = room[i]["id"];
+    const message = {
+      notification: {
+        title: title,
+        body: messageBody,
+      },
+    };
+    const send = await admin
+      .messaging()
+      .sendToDevice(registrationToken, message, options);
+    out.push(send);
+  }
+  return out;
+};
+
 // sync here
 
 exports.User = User;
@@ -680,3 +706,4 @@ exports.CourierPost = CourierPost;
 exports.MessageBox = MessageBox;
 exports.Contact = Contact;
 exports.OrderList = OrderList;
+exports.sendNotification = sendNotification;
