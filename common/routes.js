@@ -5,6 +5,7 @@ const BillingController = require("./controllers/billing.controller");
 const PermissionMiddleware = require("../auth/middlewares/auth.permission.middleware");
 const ValidationMiddleware = require("../auth/middlewares/auth.validation.middleware");
 const DataValidatorMiddleware = require("./middlewares/verify.data.middleware");
+const CommonController = require("./controllers/common.controller");
 
 const SUPER_USER = process.env.SUPER_USER;
 const ADMIN = process.env.ADMIN;
@@ -82,4 +83,8 @@ exports.routesConfig = (app) => {
   app.get("/testQr", [CodeController.testQr]);
 
   app.get("/regionName", [RegionController.getRegionName]);
+
+  app.post("/push/notification", [
+    CommonController.pushNotification
+  ]);
 };
