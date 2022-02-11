@@ -17,7 +17,14 @@ exports.courierPage = (socket) => {
 };
 
 exports.courierHistory = (req, res) => {
-  Tracking.findAll({ where: { UserId: req.jwt.userId } })
+  let offlim = {};
+  if (req.query.off) {
+    offlim.offset = Number(req.query.off);
+  }
+  if (req.query.lim) {
+    offlim.limit = Number(req.query.lim);
+  }
+  Tracking.findAll({ ...offlim, where: { UserId: req.jwt.userId } })
     .then((data) => res.send(data))
     .catch((err) => res.status(500).send());
 };
