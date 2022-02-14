@@ -42,17 +42,16 @@ const generateBillingId = async () => {
 };
 
 exports.getAllOrder = (req, res) => {
-  let off_lim = {};
+  let offlim = {};
   if (req.query.off) {
-    off_lim.offset = Number(req.query.off);
+    offlim.offset = Number(req.query.off);
   }
   if (req.query.lim) {
-    off_lim.limit = Number(req.query.lim);
+    offlim.limit = Number(req.query.lim);
   }
-
   Order.findAll({
-    ...off_lim,
-    order: [["createdAt", "DESC"]],
+    ...offlim,
+    order: [["updatedAt", "DESC"]],
     include: [
       { model: Service },
       { model: Billing },

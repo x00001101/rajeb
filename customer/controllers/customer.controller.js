@@ -24,7 +24,11 @@ exports.customerOrderHistory = async (req, res) => {
   if (req.query.lim) {
     offlim.limit = Number(req.query.lim);
   }
-  Order.findAll({ where: { UserId: req.params.userId }, ...offlim })
+  Order.findAll({
+    order: [["createdAt", "desc"]],
+    where: { UserId: req.params.userId },
+    ...offlim,
+  })
     .then((data) => {
       res.send(data);
     })
