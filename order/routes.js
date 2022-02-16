@@ -98,6 +98,6 @@ exports.routesConfig = (app, socket, io) => {
   //pdf Awb
   app.get("/createPdfAwb", [
     // ValidationMiddleware.validJWTNeeded,
-    pdfController.createNewPdf,
+    pdfController.createAwpPrint,
   ]);
 };

@@ -46,6 +46,12 @@ exports.routesConfig = (app, socket) => {
     CourierController.setPostCourier,
   ]);
 
+  app.get("/couriers/getPost/:userId", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.minimumPermissionLevelRequired("ADMIN"),
+    CourierController.getCourierPost
+  ]);
+
   app.get("/couriers", [
     ValidationMiddleware.validJWTNeeded,
     PermissionMiddleware.minimumPermissionLevelRequired("ADMIN"),

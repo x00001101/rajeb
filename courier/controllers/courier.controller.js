@@ -61,11 +61,9 @@ exports.setPostCourier = async (req, res, next) => {
     return res.status(404).send({ error: "User is not found!" });
   }
 
-  const villages = req.body.posts;
-  const array = Array.isArray(villages);
-  if (!array) {
-    return res.status(400).send({ error: "Posts must be an array!" });
-  }
+  const pst = req.body.posts;
+  
+  const villages = pst.split(";");
 
   let posts = {};
 
@@ -135,3 +133,20 @@ exports.acceptOrderList = (req, res) => {
     .then((data) => res.send(data))
     .catch((err) => res.status(500).send(err));
 };
+
+exports.getCourierPost = (req, res) => {
+  CourierPost.findAll({ 
+    where: { 
+      UserId: req.params.userId 
+    },
+    include: [
+      { model: Village },
+      { 
+        model: User,
+        attributes: [ "id", "fullName", "phoneNumber", "email" ]
+      }
+    ]
+  })
+    .then(data => res.send(data))
+    .catch(err => res.status(500).send(err));
+}

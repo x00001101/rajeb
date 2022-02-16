@@ -366,7 +366,7 @@ exports.getAllPacking = (req, res) => {
     offlim.limmit = req.query.lim;
   }
 
-  Packing.findAll({ where: { userId: req.jwt.userId }, ...offlim })
+  Packing.findAll({ where: { userId: req.jwt.userId }, ...offlim, order: [["updatedAt", "DESC"]] })
     .then((data) => {
       res.send(data);
     })

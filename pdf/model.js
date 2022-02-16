@@ -12,6 +12,232 @@ const QRcode = require("qrcode");
 const { Village } = require("../common/models/region.model");
 const bwipjs = require("bwip-js");
 
+const createPdfNew = async (awb) => {
+  const order = await Order.findOne({
+    where: { id: awb },
+    include: [
+      { model: Service },
+      { model: Billing },
+      { model: Village, as: "origin" },
+      { model: Village, as: "destination" },
+    ],
+  });
+
+  if (order === null) {
+    return false;
+  }
+
+  const originPost = await Post.findOne({
+    where: { regionId: order.origin.DistrictId },
+  });
+
+  const destinationPost = await Post.findOne({
+    where: { regionId: order.destination.DistrictId },
+  });
+
+  let date_ob = new Date();
+
+  // current date
+  // adjust 0 before single digit date
+  let date = ("0" + date_ob.getDate()).slice(-2);
+  // current month
+  let month = ("0" + (date_ob.getMonth() + 1)).slice(-2);
+  // current year
+  let year = date_ob.getFullYear();
+  // current hours
+  let hours = date_ob.getHours();
+  // current minutes
+  let minutes = date_ob.getMinutes();
+  // current seconds
+  let seconds = date_ob.getSeconds();
+  const date_print =
+    year +
+    "-" +
+    month +
+    "-" +
+    date +
+    " " +
+    hours +
+    ":" +
+    minutes +
+    ":" +
+    seconds;
+
+  //check the length of addresses
+  let originAddress = order.senderAddress;
+  let originLength = originAddress.length;
+  let destinationAddress = order.recipientAddress;
+  let destinationLength = destinationAddress.length;
+  let itemValue = order.itemValue;
+
+  let dateCreated = new Date(order.createdAt);
+
+  date = ("0" + dateCreated.getDate()).slice(-2);
+  // current month
+  month = ("0" + (dateCreated.getMonth() + 1)).slice(-2);
+  // current year
+  year = dateCreated.getFullYear();
+
+  dateCreated = date+"/"+month+"/"+year;
+
+  // new line parameter
+  const minLength = 31;
+
+  const getNewLine = (length, minLength) => {
+    if (length > minLength) {
+      return;
+    } else {
+      return {
+        text: " ",
+      };
+    }
+  };
+
+  const font = {
+    SpaceMono: {
+      normal: path.join(__dirname, "/fonts", "/SpaceMono-Regular.ttf"),
+      bold: path.join(__dirname, "/fonts", "/SpaceMono-Bold.ttf"),
+      italics: path.join(__dirname, "/fonts", "/SpaceMono-Italic.ttf"),
+      bolditalics: path.join(__dirname, "/fonts", "/SpaceMono-BoldItalic.ttf"),
+    },
+  };
+
+  var bitmap = fs.readFileSync(path.join("src", "img", "logo.jpeg"));
+  var logo = "data:image/jpeg;base64," + Buffer.from(bitmap).toString("base64");
+
+  const QR = await QRcode.toDataURL("http://localhost:3600/tracking?id=" + awb);
+  // barcode
+  let bar = await bwipjs.toBuffer({
+    bcid: "code128",
+    text: awb,
+    scale: 5,
+    height: 20,
+    includetext: false,
+  });
+  const barcode =
+    "data:image/png;base64," + Buffer.from(bar).toString("base64");
+
+  const printer = new PdfPrinter(font);
+
+  const docDefinition = {
+    pageSize: {
+      width: 300,
+      height: 200,
+    },
+    pageMargins: [5, 0, 5, 0],
+    content: [
+      {        
+        style: 'tableZeroMargin', 
+        table: {
+          widths: [80, '*'],
+          body: [
+            [{image: logo, width: 80}, {rowSpan: 2, image: barcode, width: 200, height: 40}],
+            [{text: `Resi: ${awb}`, fontSize: 6, bold: true}, ""],
+          ]
+        },
+        layout: 'noBorders',
+      },
+      {
+        style: 'tableZeroMargin',
+        table: {
+          widths: ['*', '*'],
+          heights: 60,
+          body: [
+            [
+              { 
+                text: [ 
+                  "Pengirim: ",
+                  { text: `${order.senderFullName}\n ${order.senderPhoneNumber}\n ${order.senderAddress}`, bold: true } 
+                ]
+              }, 
+              {
+                text: [
+                  "Penerima: ",
+                  {text: `${order.recipientFullName}\n ${order.recipientPhoneNumber}\n ${order.recipientAddress}`, bold: true}
+                ]
+              }
+            ]
+          ]
+        }
+      },
+      {
+        style: 'tableZeroMargin',
+        table: {
+          widths: [150,'auto','*'],
+          body: [
+            [
+              { rowSpan: 2, 
+                text: [
+                  { 
+                    text:
+                     `Berat     : ${order.itemWeight} Kg.
+                      Tarif     : Rp. ${order.Billing.serviceAmount}
+                      Nom.      : Rp. ${order.itemValue}
+                      Ttl.      : `, 
+                      fontSize: 5 
+                  }, 
+                  {
+                    text: `Rp. ${Number(order.Billing.totalAmount) + Number(order.itemValue)}\n`, 
+                    bold: true, 
+                    fontSize: 5
+                  },
+                  { 
+                    text: 
+                     `Tgl. Krm. : ${dateCreated}
+                      Brg.      : ${order.itemName}`,
+                    fontSize: 5
+                  }
+                ] 
+              },
+              { rowSpan: 2, image: QR, width: 60, alignment: "center" },
+              { text: `${order.Billing.BillingTypeId}`, fontSize: 16, bold: true, alignment: "center"}
+            ],
+            [
+              '','', {text: `${destinationPost.id}`, fontSize: 13, bold: true, alignment: "center"}
+            ]
+          ]
+        }
+      },
+      {
+        style: 'tableFooter',
+        table: {
+          widths: ['*'],
+          body: [
+            [{text: 'Terima Kasih telah menggunakan layanan Kami! CS: +62 811 808 738', alignment: "center", fontSize: 6}]
+          ]
+        }
+      }
+    ],
+    styles: {
+      tableZeroMargin: {
+        margin: [0, 0, 0, 0],
+      },
+      tableFooter: {
+        margin: [0, 5, 0, 5],
+      }
+    },
+    defaultStyle: {
+      font: "SpaceMono",
+      fontSize: 7,
+    },
+  };
+
+  const pdfDoc = printer.createPdfKitDocument(docDefinition);
+  return new Promise((resolve, reject) => {
+    try {
+      if (order === null) {
+        reject({ message: "Id not found!" });
+      }
+      let chunks = [];
+      pdfDoc.on("data", (chunk) => chunks.push(chunk));
+      pdfDoc.on("end", () => resolve(Buffer.concat(chunks)));
+      pdfDoc.end();
+    } catch (err) {
+      reject(err);
+    }
+  });
+};
+
 const createPdf = async (awb) => {
   // find order id
   const order = await Order.findOne({
@@ -279,3 +505,4 @@ const createPdf = async (awb) => {
 };
 
 exports.createPdf = createPdf;
+exports.createPdfNew = createPdfNew;
