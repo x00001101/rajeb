@@ -12,6 +12,10 @@ const QRcode = require("qrcode");
 const { Village } = require("../common/models/region.model");
 const bwipjs = require("bwip-js");
 
+const formater = new Intl.NumberFormat(["ban", "id"], {
+  maximumFractionDigits: 0,
+});
+
 const createPdfNew = async (awb) => {
   const order = await Order.findOne({
     where: { id: awb },
@@ -78,7 +82,7 @@ const createPdfNew = async (awb) => {
   // current year
   year = dateCreated.getFullYear();
 
-  dateCreated = date+"/"+month+"/"+year;
+  dateCreated = date + "/" + month + "/" + year;
 
   // new line parameter
   const minLength = 31;
@@ -126,87 +130,116 @@ const createPdfNew = async (awb) => {
     },
     pageMargins: [5, 0, 5, 0],
     content: [
-      {        
-        style: 'tableZeroMargin', 
+      {
+        style: "tableZeroMargin",
         table: {
-          widths: [80, '*'],
+          widths: [80, "*"],
           body: [
-            [{image: logo, width: 80}, {rowSpan: 2, image: barcode, width: 200, height: 40}],
-            [{text: `Resi: ${awb}`, fontSize: 6, bold: true}, ""],
-          ]
+            [
+              { image: logo, width: 80 },
+              { rowSpan: 2, image: barcode, width: 200, height: 40 },
+            ],
+            [{ text: `Resi: ${awb}`, fontSize: 6, bold: true }, ""],
+          ],
         },
-        layout: 'noBorders',
+        layout: "noBorders",
       },
       {
-        style: 'tableZeroMargin',
+        style: "tableZeroMargin",
         table: {
-          widths: ['*', '*'],
+          widths: ["*", "*"],
           heights: 60,
           body: [
             [
-              { 
-                text: [ 
+              {
+                text: [
                   "Pengirim: ",
-                  { text: `${order.senderFullName}\n ${order.senderPhoneNumber}\n ${order.senderAddress}`, bold: true } 
-                ]
-              }, 
+                  {
+                    text: `${order.senderFullName}\n ${order.senderPhoneNumber}\n ${order.senderAddress}`,
+                    bold: true,
+                  },
+                ],
+              },
               {
                 text: [
                   "Penerima: ",
-                  {text: `${order.recipientFullName}\n ${order.recipientPhoneNumber}\n ${order.recipientAddress}`, bold: true}
-                ]
-              }
-            ]
-          ]
-        }
+                  {
+                    text: `${order.recipientFullName}\n ${order.recipientPhoneNumber}\n ${order.recipientAddress}`,
+                    bold: true,
+                  },
+                ],
+              },
+            ],
+          ],
+        },
       },
       {
-        style: 'tableZeroMargin',
+        style: "tableZeroMargin",
         table: {
-          widths: [150,'auto','*'],
+          widths: [150, "auto", "*"],
           body: [
             [
-              { rowSpan: 2, 
+              {
+                rowSpan: 2,
                 text: [
-                  { 
-                    text:
-                     `Berat     : ${order.itemWeight} Kg.
+                  {
+                    text: `Berat     : ${order.itemWeight} Kg.
                       Tarif     : Rp. ${order.Billing.serviceAmount}
                       Nom.      : Rp. ${order.itemValue}
-                      Ttl.      : `, 
-                      fontSize: 5 
-                  }, 
-                  {
-                    text: `Rp. ${Number(order.Billing.totalAmount) + Number(order.itemValue)}\n`, 
-                    bold: true, 
-                    fontSize: 5
+                      Ttl.      : `,
+                    fontSize: 5,
                   },
-                  { 
-                    text: 
-                     `Tgl. Krm. : ${dateCreated}
+                  {
+                    text: `Rp. ${
+                      Number(order.Billing.totalAmount) +
+                      Number(order.itemValue)
+                    }\n`,
+                    bold: true,
+                    fontSize: 5,
+                  },
+                  {
+                    text: `Tgl. Krm. : ${dateCreated}
                       Brg.      : ${order.itemName}`,
-                    fontSize: 5
-                  }
-                ] 
+                    fontSize: 5,
+                  },
+                ],
               },
               { rowSpan: 2, image: QR, width: 60, alignment: "center" },
-              { text: `${order.Billing.BillingTypeId}`, fontSize: 16, bold: true, alignment: "center"}
+              {
+                text: `${order.Billing.BillingTypeId}`,
+                fontSize: 16,
+                bold: true,
+                alignment: "center",
+              },
             ],
             [
-              '','', {text: `${destinationPost.id}`, fontSize: 13, bold: true, alignment: "center"}
-            ]
-          ]
-        }
+              "",
+              "",
+              {
+                text: `${destinationPost.id}`,
+                fontSize: 13,
+                bold: true,
+                alignment: "center",
+              },
+            ],
+          ],
+        },
       },
       {
-        style: 'tableFooter',
+        style: "tableFooter",
         table: {
-          widths: ['*'],
+          widths: ["*"],
           body: [
-            [{text: 'Terima Kasih telah menggunakan layanan Kami! CS: +62 811 808 738', alignment: "center", fontSize: 6}]
-          ]
-        }
-      }
+            [
+              {
+                text: "Terima Kasih telah menggunakan layanan Kami! CS: +62 811 808 738",
+                alignment: "center",
+                fontSize: 6,
+              },
+            ],
+          ],
+        },
+      },
     ],
     styles: {
       tableZeroMargin: {
@@ -214,7 +247,7 @@ const createPdfNew = async (awb) => {
       },
       tableFooter: {
         margin: [0, 5, 0, 5],
-      }
+      },
     },
     defaultStyle: {
       font: "SpaceMono",
@@ -570,7 +603,7 @@ const createPdf10075 = async (awb) => {
   // current year
   year = dateCreated.getFullYear();
 
-  dateCreated = date+"/"+month+"/"+year;
+  dateCreated = date + "/" + month + "/" + year;
 
   // new line parameter
   const minLength = 31;
@@ -618,87 +651,118 @@ const createPdf10075 = async (awb) => {
     },
     pageMargins: [5, 10, 5, 0],
     content: [
-      {        
-        style: 'tableZeroMargin', 
+      {
+        style: "tableZeroMargin",
         table: {
-          widths: [80, '*'],
+          widths: [80, "*"],
           body: [
-            [{image: logo, width: 80}, {rowSpan: 2, image: barcode, width: 200, height: 40}],
-            [{text: `Resi: ${awb}`, fontSize: 6, bold: true}, ""],
-          ]
+            [
+              { image: logo, width: 80 },
+              { rowSpan: 2, image: barcode, width: 200, height: 40 },
+            ],
+            [{ text: `Resi: ${awb}`, fontSize: 6, bold: true }, ""],
+          ],
         },
-        layout: 'noBorders',
+        layout: "noBorders",
       },
       {
-        style: 'tableZeroMargin',
+        style: "tableZeroMargin",
         table: {
-          widths: ['*', '*'],
+          widths: ["*", "*"],
           heights: 60,
           body: [
             [
-              { 
-                text: [ 
+              {
+                text: [
                   "Pengirim: ",
-                  { text: `${order.senderFullName}\n ${order.senderPhoneNumber}\n ${order.senderAddress}`, bold: true } 
-                ]
-              }, 
+                  {
+                    text: `${order.senderFullName}\n ${order.senderPhoneNumber}\n ${order.senderAddress}`,
+                    bold: true,
+                  },
+                ],
+              },
               {
                 text: [
                   "Penerima: ",
-                  {text: `${order.recipientFullName}\n ${order.recipientPhoneNumber}\n ${order.recipientAddress}`, bold: true}
-                ]
-              }
-            ]
-          ]
-        }
+                  {
+                    text: `${order.recipientFullName}\n ${order.recipientPhoneNumber}\n ${order.recipientAddress}`,
+                    bold: true,
+                  },
+                ],
+              },
+            ],
+          ],
+        },
       },
       {
-        style: 'tableZeroMargin',
+        style: "tableZeroMargin",
         table: {
-          widths: [150,'auto','*'],
+          widths: [150, "auto", "*"],
           body: [
             [
-              { rowSpan: 2, 
+              {
+                rowSpan: 2,
                 text: [
-                  { 
-                    text:
-                     `Berat     : ${order.itemWeight} Kg.
-                      Tarif     : Rp. ${order.Billing.serviceAmount}
-                      Nom.      : Rp. ${order.itemValue}
-                      Ttl.      : `, 
-                      fontSize: 6 
-                  }, 
                   {
-                    text: `Rp. ${Number(order.Billing.totalAmount) + Number(order.itemValue)}\n`, 
-                    bold: true, 
-                    fontSize: 6
+                    text: `Berat     : ${order.itemWeight} Kg.
+                      Tarif     : Rp. ${formater.format(
+                        order.Billing.serviceAmount
+                      )}
+                      Nom.      : Rp. ${formater.format(order.itemValue)}
+                      Ttl.      : `,
+                    fontSize: 6,
                   },
-                  { 
-                    text: 
-                     `Tgl. Krm. : ${dateCreated}
+                  {
+                    text: `Rp. ${formater.format(
+                      Number(order.Billing.totalAmount) +
+                        Number(order.itemValue)
+                    )}\n`,
+                    bold: true,
+                    fontSize: 6,
+                  },
+                  {
+                    text: `Tgl. Krm. : ${dateCreated}
                       Brg.      : ${order.itemName}`,
-                    fontSize: 6
-                  }
-                ] 
+                    fontSize: 6,
+                  },
+                ],
               },
               { rowSpan: 2, image: QR, width: 60, alignment: "center" },
-              { text: `${order.Billing.BillingTypeId}`, fontSize: 16, bold: true, alignment: "center"}
+              {
+                text: `${order.Billing.BillingTypeId}`,
+                fontSize: 16,
+                bold: true,
+                alignment: "center",
+              },
             ],
             [
-              '','', {text: `${destinationPost.id}`, fontSize: 13, bold: true, alignment: "center"}
-            ]
-          ]
-        }
+              "",
+              "",
+              {
+                text: `${destinationPost.id}`,
+                fontSize: 13,
+                bold: true,
+                alignment: "center",
+              },
+            ],
+          ],
+        },
       },
       {
-        style: 'tableFooter',
+        style: "tableFooter",
         table: {
-          widths: ['*'],
+          widths: ["*"],
           body: [
-            [{text: 'Terima Kasih telah menggunakan layanan Kami! CS: +62 811 808 738', alignment: "center", fontSize: 6}]
-          ]
-        }
-      }
+            [
+              {
+                text: "Terima Kasih telah menggunakan layanan Kami! CS: +62 811 808 738",
+                alignment: "center",
+                fontSize: 6,
+              },
+            ],
+          ],
+        },
+      },
     ],
     styles: {
       tableZeroMargin: {
@@ -706,7 +770,7 @@ const createPdf10075 = async (awb) => {
       },
       tableFooter: {
         margin: [0, 5, 0, 5],
-      }
+      },
     },
     defaultStyle: {
       font: "SpaceMono",
