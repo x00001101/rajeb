@@ -52,9 +52,7 @@ exports.routesConfig = (app, socket, io) => {
 
   app.get("/orders/:orderId", [
     ValidationMiddleware.validJWTNeeded,
-    PermissionMiddleware.onlyAdminAndPermitedPermissionLevelRequired(
-      PERMITED_COURIER
-    ),
+    PermissionMiddleware.minimumPermissionLevelRequired(CUSTOMER),
     OrderController.getOrderDetail,
   ]);
 

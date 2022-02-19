@@ -538,6 +538,25 @@ exports.getOrderDetail = async (req, res) => {
       { model: Billing },
       { model: Village, as: "origin" },
       { model: Village, as: "destination" },
+      {
+        model: Tracking,
+        include: [
+          {
+            model: Code,
+            required: true,
+            attributes: ["name", "description"],
+          },
+          {
+            model: Post,
+            attributes: ["name"],
+          },
+          {
+            model: User,
+            required: true,
+            attributes: ["fullName", "phoneNumber"],
+          },
+        ],
+      },
     ],
   });
   if (orderData === null) {
