@@ -21,4 +21,10 @@ exports.routesConfig = (app) => {
     // DataValidatorMiddleware.dataVerification("verifyDataRequestForGetPrice"),
     ServiceController.getPrice,
   ]);
+
+  app.delete("/services/:serviceId", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.minimumPermissionLevelRequired(SUPER_USER),
+    ServiceController.deleteService,
+  ]);
 };

@@ -1,5 +1,10 @@
 const { Post } = require("../../common/models/main.model");
-const { Province, Regency, District, Village } = require("../../common/models/region.model");
+const {
+  Province,
+  Regency,
+  District,
+  Village,
+} = require("../../common/models/region.model");
 
 exports.createNew = async (req, res) => {
   // find region as district id;
@@ -14,16 +19,16 @@ exports.createNew = async (req, res) => {
     type: req.body.type,
   };
   try {
-     // set covererd to 1 every villages in that region.=================
-    
-    // get Province Id from Regency 
-    const regency = await Regency.findOne({ where: { id: region.RegencyId }});
+    // set covererd to 1 every villages in that region.=================
+
+    // get Province Id from Regency
+    const regency = await Regency.findOne({ where: { id: region.RegencyId } });
 
     // set every covered to 1
-    Province.update({ covered: 1 }, { where: { id: regency.ProvinceId }});
-    Regency.update({ covered: 1 }, { where: { id: regency.id }});
-    District.update({ covered: 1 }, { where: { id: region.id }});
-    Village.update({ covered: 1 }, { where: { DistrictId: region.id }});
+    Province.update({ covered: 1 }, { where: { id: regency.ProvinceId } });
+    Regency.update({ covered: 1 }, { where: { id: regency.id } });
+    District.update({ covered: 1 }, { where: { id: region.id } });
+    Village.update({ covered: 1 }, { where: { DistrictId: region.id } });
     // end set =========================================================
 
     const post = await Post.create(newPost);
@@ -39,7 +44,7 @@ exports.createNew = async (req, res) => {
 };
 
 exports.findAllPosts = (req, res) => {
-  Post.findAll({ 
+  Post.findAll({
     include: {
       model: District,
       as: "region",
@@ -55,5 +60,11 @@ exports.findAllPosts = (req, res) => {
     },
   })
     .then((data) => res.send(data))
+    .catch((err) => res.status(500).send(err));
+};
+
+exports.deletePost = (req, res) => {
+  Post.destroy({ where: { id: req.params.postId } })
+    .then(() => res.send())
     .catch((err) => res.status(500).send(err));
 };

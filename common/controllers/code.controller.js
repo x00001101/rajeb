@@ -25,7 +25,7 @@ exports.getAllCodes = (req, res) => {
   if (req.query.off) {
     limoff.offset = Number(req.query.off);
   }
-  Code.findAll({ ...limoff })
+  Code.findAll({ ...limoff, include: CodeAttribute })
     .then((data) => {
       res.send(data);
     })
@@ -93,4 +93,18 @@ exports.testQr = (req, res) => {
     console.log(url);
     res.send();
   });
+};
+
+exports.deleteCode = (req, res, next) => {
+  Code.destroy({ where: { id: req.params.codeId } })
+    .then(() => {
+      res.send();
+    })
+    .catch((err) => next(err));
+};
+
+exports.getAllAttributes = (req, res) => {
+  CodeAttribute.findAll({ where: { CodeId: req.params.codeId } })
+    .then((data) => res.send(data))
+    .catch((err) => res.status(500).send(err));
 };

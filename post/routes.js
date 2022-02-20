@@ -19,4 +19,10 @@ exports.routesConfig = (app) => {
     PermissionMiddleware.minimumPermissionLevelRequired(COURIER),
     PostController.findAllPosts,
   ]);
+
+  app.delete("/posts/:postId", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.minimumPermissionLevelRequired(ADMIN),
+    PostController.deletePost,
+  ]);
 };

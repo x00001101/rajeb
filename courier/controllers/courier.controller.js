@@ -62,7 +62,7 @@ exports.setPostCourier = async (req, res, next) => {
   }
 
   const pst = req.body.posts;
-  
+
   const villages = pst.split(";");
 
   let posts = {};
@@ -135,18 +135,24 @@ exports.acceptOrderList = (req, res) => {
 };
 
 exports.getCourierPost = (req, res) => {
-  CourierPost.findAll({ 
-    where: { 
-      UserId: req.params.userId 
+  CourierPost.findAll({
+    where: {
+      UserId: req.params.userId,
     },
     include: [
       { model: Village },
-      { 
+      {
         model: User,
-        attributes: [ "id", "fullName", "phoneNumber", "email" ]
-      }
-    ]
+        attributes: ["id", "fullName", "phoneNumber", "email"],
+      },
+    ],
   })
-    .then(data => res.send(data))
-    .catch(err => res.status(500).send(err));
-}
+    .then((data) => res.send(data))
+    .catch((err) => res.status(500).send(err));
+};
+
+exports.delPostCourier = (req, res) => {
+  CourierPost.destroy({ where: { id: req.params.courierPostId } })
+    .then(() => res.send())
+    .catch((err) => res.status(500).send());
+};

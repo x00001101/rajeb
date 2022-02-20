@@ -39,6 +39,12 @@ exports.routesConfig = (app, socket) => {
     ),
   ]);
 
+  app.delete("/courier/delPost/:courierPostId", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.minimumPermissionLevelRequired("ADMIN"),
+    CourierController.delPostCourier,
+  ]);
+
   app.post("/courier/setPost/:userId", [
     ValidationMiddleware.validJWTNeeded,
     PermissionMiddleware.minimumPermissionLevelRequired("ADMIN"),
@@ -49,7 +55,7 @@ exports.routesConfig = (app, socket) => {
   app.get("/couriers/getPost/:userId", [
     ValidationMiddleware.validJWTNeeded,
     PermissionMiddleware.minimumPermissionLevelRequired("ADMIN"),
-    CourierController.getCourierPost
+    CourierController.getCourierPost,
   ]);
 
   app.get("/couriers", [

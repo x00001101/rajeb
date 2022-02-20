@@ -54,6 +54,12 @@ exports.routesConfig = (app) => {
     CodeController.getAllCodes,
   ]);
 
+  app.delete("/codes/:codeId", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.minimumPermissionLevelRequired(SUPER_USER),
+    CodeController.deleteCode,
+  ]);
+
   app.post("/types", [
     ValidationMiddleware.validJWTNeeded,
     PermissionMiddleware.minimumPermissionLevelRequired(ADMIN),
@@ -78,13 +84,23 @@ exports.routesConfig = (app) => {
     BillingController.createBillingType,
   ]);
 
+  app.delete("/billingtypes/:billingTypeId", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.minimumPermissionLevelRequired(SUPER_USER),
+    BillingController.deleteBillingType,
+  ]);
+
   app.get("/billingTypes", [BillingController.getAllBillingTypes]);
 
   app.get("/testQr", [CodeController.testQr]);
 
   app.get("/regionName", [RegionController.getRegionName]);
 
-  app.post("/push/notification", [
-    CommonController.pushNotification
+  app.post("/push/notification", [CommonController.pushNotification]);
+
+  app.get("/codeAttributes/:codeId", [
+    ValidationMiddleware.validJWTNeeded,
+    PermissionMiddleware.minimumPermissionLevelRequired(ADMIN),
+    CodeController.getAllAttributes,
   ]);
 };

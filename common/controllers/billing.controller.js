@@ -18,3 +18,9 @@ exports.getAllBillingTypes = (req, res) => {
     .then((data) => res.send(data))
     .catch((err) => res.status(500).send());
 };
+
+exports.deleteBillingType = (req, res) => {
+  BillingType.destroy({ where: { id: req.params.billingTypeId } })
+    .then(() => res.send())
+    .catch((err) => res.status(500).send(err));
+};

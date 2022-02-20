@@ -53,3 +53,9 @@ exports.getPrice = async (req, res) => {
   );
   res.send(data);
 };
+
+exports.deleteService = (req, res, next) => {
+  Service.destroy({ where: { id: req.params.serviceId } })
+    .then(() => res.send())
+    .catch((err) => res.status(500).send(err));
+};
