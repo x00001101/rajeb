@@ -142,6 +142,7 @@ const Order = db.define(
       allowNull: false,
       defaultValue: false,
     },
+    paidValue: DataTypes.INTEGER,
   },
   {
     indexes: [
